@@ -4,7 +4,7 @@
   const {levels,units}=window.STATICS_CURRICULUM;
   const KEY='mechanics-playground-v3';
   const scenes=['lever','support','beam','friction'];
-  const base=()=>({schema:3,mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},completed:{},hints:0,wrong:0,slots:{}});
+  const base=()=>({schema:3,mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},material:{E:200000,yield:250,maxStrain:.002,H:1000},completed:{},hints:0,wrong:0,slots:{}});
   let state=base();
   const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
   const notice=t=>$('#interactionNotice').textContent=t;
@@ -13,6 +13,7 @@
     state.scene=l.scene;state.x=.8;state.F=20;state.theta=90;state.support=true;
     state.beam={a:1,P:20};state.friction={alpha:30,mu:.4};
     const p=l.setup||{};
+    if(p.material)state.material={...state.material,...p.material};
     for(const k of ['x','F','theta','support']) if(p[k]!==undefined) state[k]=p[k];
     for(const k of ['a','P']) if(p[k]!==undefined) state.beam[k]=p[k];
     for(const k of ['alpha','mu']) if(p[k]!==undefined) state.friction[k]=p[k];
@@ -21,7 +22,7 @@
     return s&&s.schema===3&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
       &&Number.isInteger(s.level)&&finite(s.level,0,levels.length)&&Number.isInteger(s.unit)&&finite(s.unit,0,units.length-1)
       &&['op','answer','passed'].includes(s.phase)&&finite(s.x,.2,2)&&finite(s.F,0,80)&&finite(s.theta,0,180)&&typeof s.support==='boolean'
-      &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)
+      &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)&&s.material&&finite(s.material.E,1,1000000)&&finite(s.material.yield,0.001,100000)&&finite(s.material.maxStrain,0.000001,1)&&finite(s.material.H,0,1000000)
       &&Number.isInteger(s.hints)&&finite(s.hints,0,4)&&Number.isInteger(s.wrong)&&finite(s.wrong,0,100000)
       &&s.completed&&typeof s.completed==='object'&&!Array.isArray(s.completed)
       &&Object.entries(s.completed).every(([id,v])=>levels.some(l=>l.id===id)&&v&&typeof v.independent==='boolean'&&typeof v.assisted==='boolean'&&finite(v.hintLevel,0,4))
@@ -61,6 +62,7 @@
     $('#xOut').textContent=fmt(state.x)+' m';$('#fOut').textContent=fmt(state.F)+' N';$('#thetaOut').textContent=fmt(state.theta)+'°';$('#fNumber').value=state.F;
   }
   function altDraw(){
+    if(state.scene==='material'){renderMaterial();return;}
     const p=state.scene==='beam'?state.beam:state.friction;
     window.StaticsScenes.render(state.scene,$('#alternateScene'),p);
     const c=window.StaticsScenes.calculate(state.scene,p);
@@ -69,6 +71,7 @@
     $('#reactionBox').textContent=state.scene==='beam'?`RA=${fmt(c.RA)} kN，RB=${fmt(c.RB)} kN，Mmax=${fmt(c.Mmax)} kN·m。`:
       state.scene==='friction'?`N=${fmt(c.N)} N；所需静摩擦=${fmt(c.driving)} N；上限=${fmt(c.maxF)} N。${c.static?'可以静止，实际摩擦按需求取值。':'不能保持静止；未指定动摩擦系数，不计算滑动摩擦或运动。'}`:'固定铰：两个力分量；水平滚动支座：竖直反力；固定端：两个力分量与一个约束力矩。';
   }
+  function renderMaterial(){const p=state.material,host=$('#alternateScene');const n=41,max=Math.max(p.maxStrain,p.yield/p.E*1.5),pts=[];for(let i=0;i<n;i++){const e=-max+2*max*i/(n-1),s=Math.abs(e)<=p.yield/p.E?p.E*e:Math.sign(e)*(p.yield+p.H*(Math.abs(e)-p.yield/p.E));pts.push([e,s]);}const W=720,H=280,px=e=>60+(e+max)/(2*max)*600,py=s=>245-s/(p.yield+p.H*max)*170;host.innerHTML=`<svg class="material-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="双线性应力应变曲线"><line x1="60" y1="245" x2="680" y2="245" class="chart-axis"/><line x1="60" y1="30" x2="60" y2="245" class="chart-axis"/><polyline points="${pts.map(q=>px(q[0])+','+py(q[1])).join(' ')}" class="stress-line"/><line x1="${px(-p.yield/p.E)}" y1="30" x2="${px(-p.yield/p.E)}" y2="245" class="yield-line"/><line x1="${px(p.yield/p.E)}" y1="30" x2="${px(p.yield/p.E)}" y2="245" class="yield-line"/><text x="70" y="24">σ—ε · E=${p.E} MPa · σᵧ=${p.yield} MPa</text><text x="665" y="266">ε</text><text x="36" y="38">σ</text></svg>`;$('#statusTag').textContent='材料试验 · 双线性本构';$('#explain').textContent='弹性区斜率为 E；超过屈服应变后进入线性强化区。当前模型用于教学，不代表完整循环塑性。';$('#reactionBox').textContent=`屈服应变 εᵧ=${(p.yield/p.E).toExponential(3)}；强化模量 H=${p.H} MPa。`}
   function renderScene(){
     const lever=state.scene==='lever';$('#scene').toggleAttribute('hidden',!lever);$('#alternateScene').hidden=lever;$('#alternateControls').hidden=lever;
     $$('.readouts,.control-grid').forEach(el=>el.hidden=!lever);
@@ -77,8 +80,8 @@
     $('#lockHint').textContent=state.mode==='teach'?'本关所需器件可直接使用；自由模式可预览全部器件。':'自由实验开放全部器件，不影响教学记录。';
     $('#openAll').classList.toggle('hidden',state.mode==='free');
     if(lever){for(const[id,key]of[['xRange','x'],['fRange','F'],['thetaRange','theta']]){$('#'+id).value=state[key];$('#'+id).disabled=false;}$('#supportToggle').checked=state.support;$('#supportToggle').disabled=false;calcLever();return;}
-    const config=state.scene==='beam'?[['a','距左支座 a',.2,3.8,.01,'m'],['P','集中荷载 P',0,60,.1,'kN']]:state.scene==='friction'?[['alpha','斜面角 α',0,60,.1,'°'],['mu','静摩擦系数 μ',0,1,.01,'']]:[];
-    const p=state.scene==='beam'?state.beam:state.friction;
+    const config=state.scene==='beam'?[['a','距左支座 a',.2,3.8,.01,'m'],['P','集中荷载 P',0,60,.1,'kN']]:state.scene==='friction'?[['alpha','斜面角 α',0,60,.1,'°'],['mu','静摩擦系数 μ',0,1,.01,'']]:state.scene==='material'?[['E','弹性模量 E',1000,400000,1000,'MPa'],['yield','屈服应力 σᵧ',10,1000,10,'MPa'],['maxStrain','最大应变',.0005,.02,.0005,''],['H','强化模量 H',0,50000,1000,'MPa']]:[];
+    const p=state.scene==='beam'?state.beam:state.scene==='friction'?state.friction:state.material;
     $('#alternateControls').innerHTML=config.length?config.map(([k,n,min,max,step,u])=>`<label>${n}<output id="alt-${k}">${fmt(p[k])} ${u}</output><input type="range" data-alt-param="${k}" min="${min}" max="${max}" step="${step}" value="${p[k]}" aria-label="${n}"></label>`).join(''):'<p>比较三种约束的反力与自由度；此图为概念示意，无参数需要调整。</p>';
     $$('[data-alt-param]').forEach(el=>el.oninput=()=>{const k=el.dataset.altParam;p[k]=Number(el.value);const u=config.find(c=>c[0]===k)[5];$('#alt-'+k).textContent=fmt(p[k])+' '+u;altDraw();save();});
     altDraw();

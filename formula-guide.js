@@ -25,6 +25,11 @@
       ['比较需求与上限',String.raw`f_{\mathrm{req}}\leq f_{s,\max}=\mu_sN`,'满足不等式才可能保持静止。实际静摩擦按需求取值，并非总等于 μₛN。虚线箭头表示上限。','#alternateScene .dashed'],
       ['寻找临界角',String.raw`\tan\alpha_c=\mu_s,\qquad\alpha_c=\arctan\mu_s`,'临界时取等号。超过临界角无法靠静摩擦保持静止；运动求解还需要动摩擦等条件。','#alternateScene .surface']
     ],
+    material:[
+      ['弹性段',String.raw`\sigma=E\varepsilon`,'应力—应变曲线初始斜率是弹性模量 E。','#alternateScene .stress-line'],
+      ['屈服边界',String.raw`\varepsilon_y=\frac{\sigma_y}{E}`,'达到屈服应变后，线性弹性假设不再适用。','#alternateScene .yield-line'],
+      ['强化段',String.raw`\sigma=\sigma_y+H(\varepsilon-\varepsilon_y)`,'当前示意采用单轴、单调加载的双线性强化模型。','#alternateScene .stress-line']
+    ],
     support:[
       ['固定铰',String.raw`\mathbf R_A=R_{Ax}\mathbf e_x+R_{Ay}\mathbf e_y`,'限制两个方向的平移，允许转动。因此有两个未知力分量，没有独立约束力矩。','#alternateScene .force'],
       ['滚动支座',String.raw`\mathbf R=R_n\mathbf n`,'理想无摩擦滚动支座只提供法向反力；画面支承面水平，法向就是竖直方向。','#alternateScene .force'],
