@@ -1,1 +1,24 @@
-(function(root){'use strict';const h=s=>[s,s,s,s],L=(id,u,t,q,a,unit,sol,c,f)=>({id,unit:u,title:t,scene:'torsion',intro:'圆实心轴的扭矩产生剪应力和扭转变形。',question:q,answer:a,unitLabel:unit,solution:sol,tolerance:typeof a==='number'?.01:undefined,concept:c,conceptId:c,hints:h(sol),formula:f,formulaLatex:f});const levels=[L('tor-l1',0,'扭矩定义','力 100 N 作用于半径 0.2 m 的力臂，扭矩是多少？',20,'N·m','T=Fr=100×0.2=20 N·m。','torque','T=Fr'),L('tor-l2',0,'极惯性矩','实心圆轴半径 0.1 m，极惯性矩 J=πr⁴/2，取 π=3.14，J 约为多少 m⁴？',0.000157,'m⁴','J=3.14×0.1⁴/2=0.000157 m⁴。','polar-inertia','J=\frac{\pi r^4}{2}'),L('tor-l3',0,'剪应力','圆轴 T=100 N·m、r=0.02 m、J=2.513×10⁻⁷ m⁴，最大剪应力约多少 MPa？',7.96,'MPa','τ=Tr/J≈100×0.02/(2.513×10⁻⁷)=7.96 MPa。','shear-stress','\tau_{max}=\frac{Tr}{J}'),L('tor-l4',0,'扭转角','T=100 N·m、L=1 m、G=80 GPa、J=2.513×10⁻⁷ m⁴，扭转角约多少 rad？',0.00497,'rad','φ=TL/(GJ)=100/(80×10⁹×2.513×10⁻⁷)=0.00497 rad。','twist-angle','\varphi=\frac{TL}{GJ}'),L('tor-l5',1,'剪切模量','剪切模量 G=80 GPa，换算为多少 Pa？',80000000000,'Pa','80 GPa=80×10⁹ Pa。','shear-modulus','G=80\,\mathrm{GPa}=80\times10^9\,\mathrm{Pa}'),L('tor-l6',1,'强度校核','最大剪应力 60 MPa，许用剪应力 75 MPa，利用率是多少？',0.8,'','η=60/75=0.8，未超过许用值。','torsion-strength','\eta=\tau/[\tau]'),L('tor-l7',1,'刚度校核','扭转角 0.02 rad，允许扭转角 0.01 rad，是否满足刚度要求？','不满足','文本','0.02>0.01，扭转角超限，因此不满足刚度要求。','torsion-stiffness','\varphi\leq[\varphi]'),L('tor-l8',1,'综合迁移','实心圆轴半径增大为原来的 2 倍，其他条件不变，最大剪应力变为原来的多少倍？',0.125,'倍','τ=Tr/J 且 J∝r⁴，所以 τ∝1/r³；半径变2倍后为1/8=0.125。','torsion-transfer','\tau\propto r^{-3}')];const c={units:['圆轴扭转基础','扭转强度与刚度'],levels};if(typeof module!=='undefined'&&module.exports)module.exports=c;if(root)root.TORSION_CURRICULUM=c})(typeof window!=='undefined'?window:globalThis);
+/* 扭转课程包：8 关覆盖扭矩、极惯性矩、剪应力、扭转角、剪切模量、强度校核、刚度校核、综合迁移。 */
+(function (root) {
+  'use strict';
+  const units = ['圆轴扭转基础', '扭转设计与综合应用'];
+  const H = (a,b,c,d) => [a,b,c,d];
+  const L = (id, unit, title, question, answer, unitLabel, solution, conceptId, hints, formulaLatex) => ({
+    id, unit, title, scene: 'torsion', intro: '用扭矩、截面几何和材料参数描述圆轴扭转。', question, answer, unitLabel,
+    tolerance: typeof answer === 'number' ? 0.01 : undefined, solution, concept: conceptId, conceptId,
+    conceptIds: [conceptId], hints, formula: formulaLatex, formulaLatex, setup: null, operation: null
+  });
+  const levels = [
+    L('torsion-ch1-l1',0,'扭矩定义','切向力 F=100 N 作用在力臂 r=0.30 m 的圆轴上。求扭矩 T。',30,'N·m','T=Fr=100×0.30=30 N·m。','torque-definition',H('辨认力矩由力和力臂决定。','使用 T=Fr。','代入 F=100、r=0.30。','T=100×0.30=30 N·m。'),'T=Fr'),
+    L('torsion-ch1-l2',0,'极惯性矩','实心圆轴直径 d=20 mm。求极惯性矩 J（mm⁴），取 π=3.1415926。',15707.963,'mm⁴','J=πd⁴/32=3.1415926×20⁴/32=15707.963 mm⁴。','polar-moment',H('极惯性矩描述截面抗扭几何特性。','实心圆用 J=πd⁴/32。','先算 20⁴=160000。','J=15707.963 mm⁴。'),'J=\\frac{\\pi d^4}{32}'),
+    L('torsion-ch1-l3',0,'剪应力','实心圆轴 T=100 N·m、d=40 mm。求外缘最大剪应力 τ_max（MPa）。',7.958,'MPa','J=πd⁴/32=251327.4 mm⁴，c=20 mm；τ=Tc/J=(100000×20)/251327.4=7.958 MPa。','torsional-shear-stress',H('最大剪应力在外表面。','使用 τ=Tc/J。','T 换成 100000 N·mm，c=20 mm。','τ=7.958 N/mm²=7.958 MPa。'),'\\tau=\\frac{Tc}{J}'),
+    L('torsion-ch1-l4',0,'扭转角','均匀圆轴 T=500 N·m、L=1 m、G=80 GPa、J=1.0×10⁻⁶ m⁴。求扭转角 θ（rad）。',0.00625,'rad','θ=TL/(GJ)=500/(80×10⁹×10⁻⁶)=0.00625 rad。','angle-of-twist',H('扭转角由载荷、长度、材料和截面共同决定。','使用 θ=TL/(GJ)。','GJ=80000 N·m²。','θ=500/80000=0.00625 rad。'),'\\theta=\\frac{TL}{GJ}'),
+    L('torsion-ch1-l5',0,'剪切模量','各向同性材料 E=200 GPa、ν=0.25。求剪切模量 G（GPa）。',80,'GPa','G=E/[2(1+ν)]=200/[2(1.25)]=80 GPa。','shear-modulus',H('剪切模量与 E、ν 相关。','使用 G=E/[2(1+ν)]。','分母 2(1+0.25)=2.5。','G=200/2.5=80 GPa。'),'G=\\frac{E}{2(1+\\nu)}'),
+    L('torsion-ch1-l6',1,'强度校核','实心圆轴 T=120 N·m、d=30 mm，许用剪应力 [τ]=40 MPa。强度是否满足？填“满足”或“不满足”。','满足','文本','J=79521.6 mm⁴、c=15 mm；τ_max=120000×15/79521.6=22.64 MPa≤40 MPa，满足。','torsion-strength-check',H('比较实际最大剪应力和许用值。','先用 τ=Tc/J。','算得 τ_max≈22.64 MPa。','22.64≤40，所以满足。'),'\\tau_{\\max}=\\frac{Tc}{J}\\leq[\\tau]'),
+    L('torsion-ch1-l7',1,'刚度校核','实心圆轴 T=200 N·m、L=1.5 m、d=25 mm、G=80 GPa，许用扭转角 2°。刚度是否满足？填“满足”或“不满足”。','不满足','文本','J=πd⁴/32≈3.835×10⁻⁸ m⁴；θ=TL/(GJ)≈0.0978 rad=5.60°>2°，不满足。','torsion-stiffness-check',H('刚度校核比较扭转角。','使用 θ=TL/(GJ)。','d=0.025 m，J≈3.835×10⁻⁸ m⁴。','θ≈5.60°超过 2°，故不满足。'),'\\theta=\\frac{TL}{GJ}\\leq[\\theta]'),
+    L('torsion-ch1-l8',1,'综合迁移','空心圆轴 d_o=50 mm、d_i=30 mm，T=800 N·m。求外表面最大剪应力（MPa）。',37.45,'MPa','J=π(d_o⁴−d_i⁴)/32=5.341×10⁻⁷ m⁴，c=0.025 m；τ=Tc/J=37.45 MPa。','torsion-transfer',H('空心轴需扣除内孔的惯性贡献。','先用空心圆 J，再用 τ=Tc/J。','统一 d_o=0.05、d_i=0.03、c=0.025 m。','J=5.341×10⁻⁷ m⁴，τ=37.45 MPa。'),'J=\\frac{\\pi(d_o^4-d_i^4)}{32},\\quad \\tau_{\\max}=\\frac{Tc}{J}')
+  ];
+  const curriculum = { units, levels };
+  if (typeof module !== 'undefined' && module.exports) { module.exports = curriculum; module.exports.TORSION_CURRICULUM = curriculum; }
+  if (root) root.TORSION_CURRICULUM = curriculum;
+})(typeof window !== 'undefined' ? window : globalThis);

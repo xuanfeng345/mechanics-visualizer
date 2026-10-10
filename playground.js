@@ -22,7 +22,6 @@
   const isLagrangian=()=>state.curriculum==='lagrangian';
   const isTorsion=()=>state.curriculum==='torsion';
   const isStressTransform=()=>state.curriculum==='stress-transform';
-  const isStressTransform=()=>state.curriculum==='stress-transform';
   const activeLevels=()=>isAxial()?axial.levels:isKinematics()?kinematics.levels:isParticleDynamics()?particleDynamics.levels:isRigidBody()?rigidBody.levels:isVibration()?vibration.levels:isLagrangian()?lagrangian.levels:isTorsion()?torsion.levels:isStressTransform()?stressTransform.levels:staticsLevels;
   const activeUnits=()=>isAxial()?axial.units:isKinematics()?kinematics.units:isParticleDynamics()?particleDynamics.units:isRigidBody()?rigidBody.units:isVibration()?vibration.units:isLagrangian()?lagrangian.units:isTorsion()?torsion.units:isStressTransform()?stressTransform.units:staticsUnits;
   const activeRecord=()=>isAxial()?state.axialCompleted:isKinematics()?state.kinematicsCompleted:isParticleDynamics()?state.dynamicsCompleted:isRigidBody()?state.rigidCompleted:isVibration()?state.vibrationCompleted:isLagrangian()?state.lagrangianCompleted:isTorsion()?state.torsionCompleted:isStressTransform()?state.stressTransformCompleted:state.completed;
