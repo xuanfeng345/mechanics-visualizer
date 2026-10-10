@@ -26,7 +26,7 @@
   const isBeamMaterial=()=>state.curriculum==='beam-material';
   const activeLevels=()=>isAxial()?axial.levels:isKinematics()?kinematics.levels:isParticleDynamics()?particleDynamics.levels:isRigidBody()?rigidBody.levels:isVibration()?vibration.levels:isLagrangian()?lagrangian.levels:isTorsion()?torsion.levels:isStressTransform()?stressTransform.levels:isBeamMaterial()?beamMaterial.levels:staticsLevels;
   const activeUnits=()=>isAxial()?axial.units:isKinematics()?kinematics.units:isParticleDynamics()?particleDynamics.units:isRigidBody()?rigidBody.units:isVibration()?vibration.units:isLagrangian()?lagrangian.units:isTorsion()?torsion.units:isStressTransform()?stressTransform.units:isBeamMaterial()?beamMaterial.units:staticsUnits;
-  const activeRecord=()=>isAxial()?state.axialCompleted:isKinematics()?state.kinematicsCompleted:isParticleDynamics()?state.dynamicsCompleted:isRigidBody()?state.rigidCompleted:isVibration()?state.vibrationCompleted:isLagrangian()?state.lagrangianCompleted:isTorsion()?state.torsionCompleted:isStressTransform()?state.stressTransformCompleted:state.completed;
+  const activeRecord=()=>isAxial()?state.axialCompleted:isKinematics()?state.kinematicsCompleted:isParticleDynamics()?state.dynamicsCompleted:isRigidBody()?state.rigidCompleted:isVibration()?state.vibrationCompleted:isLagrangian()?state.lagrangianCompleted:isTorsion()?state.torsionCompleted:isStressTransform()?state.stressTransformCompleted:isBeamMaterial()?state.beamMaterialCompleted:state.completed;
   let state=base();
   const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
   const notice=t=>$('#interactionNotice').textContent=t;
@@ -143,10 +143,10 @@
     const units=activeUnits();
     $('#unitSelect').innerHTML=units.map((n,i)=>`<option value="${i}">${i+1} · ${n}</option>`).join('');$('#unitSelect').value=state.unit;
     $('#levelList').innerHTML=activeLevels().map((l,i)=>({l,i})).filter(({l})=>l.unit===state.unit).map(({l,i})=>{
-      const c=(isAxial()?state.axialCompleted:state.completed)[l.id];return `<button class="progress-item ${i===state.level?'current':''} ${c?'done':''}" data-level="${i}"><span class="num">${c?'✓':i+1}</span><span>${l.title}</span><small>${c?(c.independent?'独立完成 · 可复习':'辅助完成 · 待独立复习'):'可挑战'}</small></button>`;
+      const c=activeRecord()[l.id];return `<button class="progress-item ${i===state.level?'current':''} ${c?'done':''}" data-level="${i}"><span class="num">${c?'✓':i+1}</span><span>${l.title}</span><small>${c?(c.independent?'独立完成 · 可复习':'辅助完成 · 待独立复习'):'可挑战'}</small></button>`;
     }).join('');
     $$('[data-level]').forEach(b=>b.onclick=()=>{enter(Number(b.dataset.level));notice('已进入关卡。可自由选择单元，推荐按顺序学习；新尝试从零级提示开始。');});
-    const record=isAxial()?state.axialCompleted:state.completed,total=Object.keys(record).length,independent=Object.values(record).filter(c=>c.independent).length;
+    const record=activeRecord(),total=Object.keys(record).length,independent=Object.values(record).filter(c=>c.independent).length;
     $('#progressText').textContent=`${total}/${activeLevels().length} · 独立 ${independent}`;
   }
   function renderCards(){
@@ -163,7 +163,7 @@
     return false;
   }
   function markComplete(forceAssisted=false){
-    const l=current(),record=isAxial()?state.axialCompleted:state.completed,old=record[l.id],assisted=forceAssisted||state.hints>0;
+    const l=current(),record=activeRecord(),old=record[l.id],assisted=forceAssisted||state.hints>0;
     record[l.id]={assisted:!!(old?.assisted||assisted),hintLevel:Math.max(old?.hintLevel||0,state.hints),independent:!!(old?.independent||!assisted)};
     renderLevels();save();
   }
