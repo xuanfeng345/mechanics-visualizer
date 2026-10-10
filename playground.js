@@ -54,21 +54,29 @@
     for(const k of ['a','P']) if(p[k]!==undefined) state.beam[k]=p[k];
     for(const k of ['alpha','mu']) if(p[k]!==undefined) state.friction[k]=p[k];
   }
+  const courseRecords={statics:[{levels:staticsLevels,units:staticsUnits},'completed'],axial:[axial,'axialCompleted'],kinematics:[kinematics,'kinematicsCompleted'],'particle-dynamics':[particleDynamics,'dynamicsCompleted'],'rigid-body':[rigidBody,'rigidCompleted'],vibration:[vibration,'vibrationCompleted'],lagrangian:[lagrangian,'lagrangianCompleted'],torsion:[torsion,'torsionCompleted'],'stress-transform':[stressTransform,'stressTransformCompleted'],'beam-material':[beamMaterial,'beamMaterialCompleted'],buckling:[buckling,'bucklingCompleted'],fatigue:[fatigue,'fatigueCompleted']};
+  const recordObject=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  function mergeSaved(saved){
+    const defaults=base(),merged={...defaults,...saved};
+    for(const [key,value] of Object.entries(defaults))if(recordObject(value)&&saved[key]===undefined)merged[key]={...value};
+    return merged;
+  }
   function valid(s) {
+    const course=s&&courseRecords[s.curriculum||'statics']?.[0];
     return s&&(s.schema===3||s.schema===4)&&['statics','axial','kinematics','particle-dynamics','rigid-body','vibration','lagrangian','torsion','stress-transform','beam-material','buckling','fatigue'].includes(s.curriculum||'statics')&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
-      &&Number.isInteger(s.level)&&finite(s.level,0,activeLevels().length)&&Number.isInteger(s.unit)&&finite(s.unit,0,activeUnits().length-1)
+      &&Number.isInteger(s.level)&&finite(s.level,0,course.levels.length)&&Number.isInteger(s.unit)&&finite(s.unit,0,course.units.length-1)
       &&['op','answer','passed'].includes(s.phase)&&finite(s.x,.2,2)&&finite(s.F,0,80)&&finite(s.theta,0,180)&&typeof s.support==='boolean'
       &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)&&s.material&&finite(s.material.E,1,1000000)&&finite(s.material.yield,0.001,100000)&&finite(s.material.maxStrain,0.000001,1)&&finite(s.material.H,0,1000000)&&s.axial&&finite(s.axial.force,-1000000,1000000)&&finite(s.axial.area,0.001,1000000)&&finite(s.axial.length,0.001,1000000)&&finite(s.axial.youngsModulus,1,1000000)&&finite(s.axial.yieldStress,0.001,1000000)&&finite(s.axial.safetyFactor,0.001,100)&&s.kinematics&&['projectile','circular','relative'].includes(s.kinematics.mode)&&finite(s.kinematics.vx,-10000,10000)&&finite(s.kinematics.vy,-10000,10000)&&finite(s.kinematics.g,0,1000)&&finite(s.kinematics.t,0,10000)&&finite(s.kinematics.radius,0.001,100000)&&finite(s.kinematics.omega,-10000,10000)
       &&Number.isInteger(s.hints)&&finite(s.hints,0,4)&&Number.isInteger(s.wrong)&&finite(s.wrong,0,100000)
       &&s.completed&&typeof s.completed==='object'&&!Array.isArray(s.completed)
-      &&Object.entries(s.completed).every(([id,v])=>activeLevels().some(l=>l.id===id)&&v&&typeof v.independent==='boolean'&&typeof v.assisted==='boolean'&&finite(v.hintLevel,0,4))
+      &&Object.values(courseRecords).every(([pack,key])=>recordObject(s[key])&&Object.entries(s[key]).every(([id,v])=>pack.levels.some(l=>l.id===id)&&v&&typeof v.independent==='boolean'&&typeof v.assisted==='boolean'&&finite(v.hintLevel,0,4)))
       &&s.slots&&typeof s.slots==='object'&&!Array.isArray(s.slots);
   }
   let restored=false;
   try {
     const saved=JSON.parse(localStorage.getItem(KEY));
     if(saved&&saved.schema===3){const migrated=base();migrated.mode=saved.mode||'teach';migrated.level=Math.min(saved.level||0,staticsLevels.length);migrated.unit=Math.min(saved.unit||0,staticsUnits.length-1);migrated.phase=['op','answer','passed'].includes(saved.phase)?saved.phase:'op';migrated.scene=saved.scene||'lever';migrated.x=saved.x??migrated.x;migrated.F=saved.F??migrated.F;migrated.theta=saved.theta??migrated.theta;migrated.support=saved.support??migrated.support;migrated.completed=saved.completed||{};migrated.slots=saved.slots||{};state=migrated;restored=true;notice('已迁移静力学进度；材料力学章节保持独立记录。');}
-    else if(valid(saved)){state=saved;restored=true;}
+    else if(saved&&saved.schema===4&&valid(mergeSaved(saved))){state=mergeSaved(saved);restored=true;}
     else {
       const old=JSON.parse(localStorage.getItem('mechanics-playground-v2'));
       if(old&&Array.isArray(old.done)) notice(`旧样板完成 ${old.done.length}/3 关，原记录保留。扩展课程从第一关开始，不将旧进度算成新关掌握。`);
