@@ -1,9 +1,10 @@
 'use strict';
-const {vec,cross}=require('./vectors');
+const {vec,cross,scale}=require('./vectors');
 /** Fixed-hinge slender rod in a plane. Angles are radians, CCW from +x. */
 function rodRelease({length=2,mass=20/9.81,phi=0,omega=0,gravity=9.81,force=vec(0,0),forceAt=length,hinge=vec(0,0)}={}){
-  const r=(length/2)*vec(Math.cos(phi),Math.sin(phi));
-  const rf=forceAt*vec(Math.cos(phi),Math.sin(phi));
+  const direction=vec(Math.cos(phi),Math.sin(phi));
+  const r=scale(direction,length/2);
+  const rf=scale(direction,forceAt);
   const torqueGravity=cross(r,vec(0,-mass*gravity));
   const torqueApplied=cross(rf,force);
   const inertia=mass*length*length/3;
