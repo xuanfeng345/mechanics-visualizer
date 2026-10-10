@@ -5,14 +5,16 @@
   const axial=window.AXIAL_CURRICULUM||{levels:[],units:[]};
   const kinematics=window.KINEMATICS_CURRICULUM||{levels:[],units:[]};
   const particleDynamics=window.PARTICLE_DYNAMICS_CURRICULUM||{levels:[],units:[]};
+  const rigidBody=window.RIGID_BODY_CURRICULUM||{levels:[],units:[]};
   const KEY='mechanics-playground-v3';
   const scenes=['lever','support','beam','friction','material','axial-bar','kinematics'];
   const base=()=>({schema:4,curriculum:'statics',particleDynamics:{force:{x:10,y:0},mass:2,velocity:{x:0,y:0},dt:2},dynamicsCompleted:{},kinematics:{mode:'projectile',vx:20,vy:20,g:9.81,t:2,radius:2,omega:3},kinematicsCompleted:{},mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},material:{E:200000,yield:250,maxStrain:.002,H:1000},axial:{force:30000,area:200,length:1000,youngsModulus:200000,yieldStress:235,safetyFactor:1.5},completed:{},axialCompleted:{},hints:0,wrong:0,slots:{}});
   const isAxial=()=>state.curriculum==='axial';
   const isKinematics=()=>state.curriculum==='kinematics';
   const isParticleDynamics=()=>state.curriculum==='particle-dynamics';
-  const activeLevels=()=>isAxial()?axial.levels:isKinematics()?kinematics.levels:isParticleDynamics()?particleDynamics.levels:staticsLevels;
-  const activeUnits=()=>isAxial()?axial.units:isKinematics()?kinematics.units:isParticleDynamics()?particleDynamics.units:staticsUnits;
+  const isRigidBody=()=>state.curriculum==='rigid-body';
+  const activeLevels=()=>isAxial()?axial.levels:isKinematics()?kinematics.levels:isParticleDynamics()?particleDynamics.levels:isRigidBody()?rigidBody.levels:staticsLevels;
+  const activeUnits=()=>isAxial()?axial.units:isKinematics()?kinematics.units:isParticleDynamics()?particleDynamics.units:isRigidBody()?rigidBody.units:staticsUnits;
   const activeRecord=()=>isAxial()?state.axialCompleted:isKinematics()?state.kinematicsCompleted:isParticleDynamics()?state.dynamicsCompleted:state.completed;
   let state=base();
   const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
@@ -32,7 +34,7 @@
     for(const k of ['alpha','mu']) if(p[k]!==undefined) state.friction[k]=p[k];
   }
   function valid(s) {
-    return s&&(s.schema===3||s.schema===4)&&['statics','axial','kinematics','particle-dynamics'].includes(s.curriculum||'statics')&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
+    return s&&(s.schema===3||s.schema===4)&&['statics','axial','kinematics','particle-dynamics','rigid-body'].includes(s.curriculum||'statics')&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
       &&Number.isInteger(s.level)&&finite(s.level,0,activeLevels().length)&&Number.isInteger(s.unit)&&finite(s.unit,0,activeUnits().length-1)
       &&['op','answer','passed'].includes(s.phase)&&finite(s.x,.2,2)&&finite(s.F,0,80)&&finite(s.theta,0,180)&&typeof s.support==='boolean'
       &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)&&s.material&&finite(s.material.E,1,1000000)&&finite(s.material.yield,0.001,100000)&&finite(s.material.maxStrain,0.000001,1)&&finite(s.material.H,0,1000000)&&s.axial&&finite(s.axial.force,-1000000,1000000)&&finite(s.axial.area,0.001,1000000)&&finite(s.axial.length,0.001,1000000)&&finite(s.axial.youngsModulus,1,1000000)&&finite(s.axial.yieldStress,0.001,1000000)&&finite(s.axial.safetyFactor,0.001,100)&&s.kinematics&&['projectile','circular','relative'].includes(s.kinematics.mode)&&finite(s.kinematics.vx,-10000,10000)&&finite(s.kinematics.vy,-10000,10000)&&finite(s.kinematics.g,0,1000)&&finite(s.kinematics.t,0,10000)&&finite(s.kinematics.radius,0.001,100000)&&finite(s.kinematics.omega,-10000,10000)
@@ -80,6 +82,7 @@
     if(state.scene==='axial-bar'){renderAxial();return;}
     if(state.scene==='kinematics'){renderKinematics();return;}
     if(state.scene==='particle-dynamics'){renderParticleDynamics();return;}
+    if(state.scene==='rigid-body'){renderRigidBody();return;}
     const p=state.scene==='beam'?state.beam:state.friction;
     window.StaticsScenes.render(state.scene,$('#alternateScene'),p);
     const c=window.StaticsScenes.calculate(state.scene,p);
@@ -88,6 +91,7 @@
     $('#reactionBox').textContent=state.scene==='beam'?`RA=${fmt(c.RA)} kN，RB=${fmt(c.RB)} kN，Mmax=${fmt(c.Mmax)} kN·m。`:
       state.scene==='friction'?`N=${fmt(c.N)} N；所需静摩擦=${fmt(c.driving)} N；上限=${fmt(c.maxF)} N。${c.static?'可以静止，实际摩擦按需求取值。':'不能保持静止；未指定动摩擦系数，不计算滑动摩擦或运动。'}`:'固定铰：两个力分量；水平滚动支座：竖直反力；固定端：两个力分量与一个约束力矩。';
   }
+  function renderRigidBody(){const p=state.rigidBody,r=window.RigidBodyScene.render($('#alternateScene'),p);$('#statusTag').textContent='刚体动力学 · 平面运动';$('#explain').textContent='刚体的质心平动与绕质心转动可以分别建立方程。';$('#reactionBox').textContent=`a=${r.acceleration.toFixed(2)} m/s²；α=${r.angularAcceleration.toFixed(2)} rad/s²；v=${r.velocity.toFixed(2)} m/s；ω=${r.angularVelocity.toFixed(2)} rad/s。`;}
   function renderParticleDynamics(){const p=state.particleDynamics,host=$('#alternateScene'),r=window.ParticleDynamicsScene.calculate(p);window.ParticleDynamicsScene.render(host,p);$('#statusTag').textContent='质点动力学 · 恒力步进';$('#explain').textContent='牛顿第二定律、功和能、冲量与动量使用同一恒力步进状态。';$('#reactionBox').textContent=`a=(${r.acceleration.x.toFixed(2)}, ${r.acceleration.y.toFixed(2)}) m/s²；v=(${r.velocity.x.toFixed(2)}, ${r.velocity.y.toFixed(2)}) m/s；动能=${r.kineticEnergy.toFixed(2)} J；功=${r.work.toFixed(2)} J。`;}
   function renderKinematics(){const p=state.kinematics,host=$('#alternateScene'),r=window.KinematicsScene.calculate(p);window.KinematicsScene.render(host,p);$('#statusTag').textContent='运动学 · '+(p.mode==='projectile'?'抛体运动':p.mode==='circular'?'匀速圆周运动':'相对运动');$('#explain').textContent='运动学只描述位置、速度和加速度，不直接讨论力。当前场景采用解析运动学关系。';$('#reactionBox').textContent=`位置 (${r.position.x.toFixed(2)}, ${r.position.y.toFixed(2)})；速度 (${r.velocity.x.toFixed(2)}, ${r.velocity.y.toFixed(2)})；加速度 (${r.acceleration.x.toFixed(2)}, ${r.acceleration.y.toFixed(2)})。`;}
   function renderAxial(){const p=state.axial,host=$('#alternateScene'),r=window.AxialScene.calculate(p);window.AxialScene.render(host,p);$('#statusTag').textContent=r.elastic?'轴向杆 · 弹性范围':'轴向杆 · 超过许用范围';$('#explain').textContent='平均正应力 σ=N/A；应变 ε=σ/E；伸长 δ=εL。单位采用 N、mm²、mm、MPa。';$('#reactionBox').textContent=`σ=${r.stress.toFixed(2)} MPa；ε=${r.strain.toExponential(3)}；δ=${r.elongation.toFixed(3)} mm；利用率=${r.utilization.toFixed(3)}。`;}
@@ -101,7 +105,7 @@
     $('#openAll').classList.toggle('hidden',state.mode==='free');
     if(lever){for(const[id,key]of[['xRange','x'],['fRange','F'],['thetaRange','theta']]){$('#'+id).value=state[key];$('#'+id).disabled=false;}$('#supportToggle').checked=state.support;$('#supportToggle').disabled=false;calcLever();return;}
     const config=state.scene==='beam'?[['a','距左支座 a',.2,3.8,.01,'m'],['P','集中荷载 P',0,60,.1,'kN']]:state.scene==='friction'?[['alpha','斜面角 α',0,60,.1,'°'],['mu','静摩擦系数 μ',0,1,.01,'']]:state.scene==='material'?[['E','弹性模量 E',1000,400000,1000,'MPa'],['yield','屈服应力 σᵧ',10,1000,10,'MPa'],['maxStrain','最大应变',.0005,.02,.0005,''],['H','强化模量 H',0,50000,1000,'MPa']]:state.scene==='kinematics'?[['vx','水平初速度 vx',-100,100,1,'m/s'],['vy','竖直初速度 vy',-100,100,1,'m/s'],['g','重力加速度 g',0,20,.1,'m/s²'],['t','时间 t',0,20,.1,'s'],['radius','半径 r',.1,20,.1,'m'],['omega','角速度 ω',-20,20,.1,'rad/s']]:state.scene==='particle-dynamics'?[['force','合力 Fx',-100,100,1,'N'],['mass','质量 m',.1,20,.1,'kg'],['dt','时间步长 Δt',0,10,.1,'s'],['velocityX','初速度 vx',-50,50,1,'m/s']]:state.scene==='axial-bar'?[['force','轴力 N',-100000,100000,100,'N'],['area','截面积 A',1,1000,1,'mm²'],['length','长度 L',100,3000,10,'mm'],['youngsModulus','弹性模量 E',1000,400000,1000,'MPa'],['yieldStress','屈服应力 σᵧ',10,1000,10,'MPa'],['safetyFactor','安全系数 n',1,5,.1,'']]:[];
-    const p=state.scene==='beam'?state.beam:state.scene==='friction'?state.friction:state.scene==='material'?state.material:state.scene==='kinematics'?state.kinematics:state.scene==='particle-dynamics'?state.particleDynamics:state.axial;
+    const p=state.scene==='beam'?state.beam:state.scene==='friction'?state.friction:state.scene==='material'?state.material:state.scene==='kinematics'?state.kinematics:state.scene==='particle-dynamics'?state.particleDynamics:state.scene==='rigid-body'?state.rigidBody:state.axial;
     $('#alternateControls').innerHTML=config.length?config.map(([k,n,min,max,step,u])=>`<label>${n}<output id="alt-${k}">${fmt(p[k])} ${u}</output><input type="range" data-alt-param="${k}" min="${min}" max="${max}" step="${step}" value="${p[k]}" aria-label="${n}"></label>`).join(''):'<p>比较三种约束的反力与自由度；此图为概念示意，无参数需要调整。</p>';
     $$('[data-alt-param]').forEach(el=>el.oninput=()=>{const k=el.dataset.altParam;p[k]=Number(el.value);const u=config.find(c=>c[0]===k)[5];$('#alt-'+k).textContent=fmt(p[k])+' '+u;altDraw();save();});
     altDraw();
@@ -183,6 +187,7 @@
   $('#staticsCourseBtn').onclick=()=>{state.curriculum='statics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学静力学，原材料章节进度保留。');};
   $('#axialCourseBtn').onclick=()=>{state.curriculum='axial';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到材料力学轴向杆，静力学进度保留。');};
   $('#kinematicsCourseBtn').onclick=()=>{state.curriculum='kinematics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学运动学，静力学与材料力学进度保留。');};
+  $('#rigidCourseBtn').onclick=()=>{state.curriculum='rigid-body';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学刚体动力学。');};
   $('#dynamicsCourseBtn').onclick=()=>{state.curriculum='particle-dynamics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学质点动力学，其他课程进度保留。');};
   $('#scenePicker').onchange=e=>{if(state.mode!=='free')return;state.scene=e.target.value;render();save();};
   for(const [id,k]of[['xRange','x'],['fRange','F'],['thetaRange','theta']])$('#'+id).oninput=e=>{state[k]=Number(e.target.value);calcLever();save();};
