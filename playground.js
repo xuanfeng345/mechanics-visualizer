@@ -177,6 +177,7 @@
   $('#unitSelect').onchange=e=>{state.unit=Number(e.target.value);renderLevels();save();};
   $('#staticsCourseBtn').onclick=()=>{state.curriculum='statics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学静力学，原材料章节进度保留。');};
   $('#axialCourseBtn').onclick=()=>{state.curriculum='axial';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到材料力学轴向杆，静力学进度保留。');};
+  $('#kinematicsCourseBtn').onclick=()=>{state.curriculum='kinematics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学运动学，静力学与材料力学进度保留。');};
   $('#scenePicker').onchange=e=>{if(state.mode!=='free')return;state.scene=e.target.value;render();save();};
   for(const [id,k]of[['xRange','x'],['fRange','F'],['thetaRange','theta']])$('#'+id).oninput=e=>{state[k]=Number(e.target.value);calcLever();save();};
   $('#fNumber').onchange=e=>{const n=Number(e.target.value);if(e.target.value.trim()===''||!finite(n,0,80)){notice('请输入0～80 N，可带小数。');e.target.value=state.F;return;}state.F=n;$('#fRange').value=n;calcLever();save();};
