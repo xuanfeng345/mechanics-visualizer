@@ -1,16 +1,21 @@
 (() => {
   'use strict';
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const {levels,units}=window.STATICS_CURRICULUM;
+  const {levels:staticsLevels,units:staticsUnits}=window.STATICS_CURRICULUM;
+  const axial=window.AXIAL_CURRICULUM||{levels:[],units:[]};
   const KEY='mechanics-playground-v3';
-  const scenes=['lever','support','beam','friction','material'];
-  const base=()=>({schema:3,mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},material:{E:200000,yield:250,maxStrain:.002,H:1000},completed:{},hints:0,wrong:0,slots:{}});
+  const scenes=['lever','support','beam','friction','material','axial-bar'];
+  const base=()=>({schema:4,curriculum:'statics',mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},material:{E:200000,yield:250,maxStrain:.002,H:1000},axial:{force:30000,area:200,length:1000,youngsModulus:200000,yieldStress:235,safetyFactor:1.5},completed:{},axialCompleted:{},hints:0,wrong:0,slots:{}});
+  const isAxial=()=>state.curriculum==='axial';
+  const activeLevels=()=>isAxial()?axial.levels:staticsLevels;
+  const activeUnits=()=>isAxial()?axial.units:staticsUnits;
   let state=base();
   const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
   const notice=t=>$('#interactionNotice').textContent=t;
   function applySetup() {
-    const l=levels[state.level];if(!l)return;
-    state.scene=l.scene;state.x=.8;state.F=20;state.theta=90;state.support=true;
+    const l=activeLevels()[state.level];if(!l)return;
+    state.scene=l.scene;state.x=.8;
+    if(state.scene==='axial-bar'){state.axial={...base().axial,...(l.setup||{})};return;}state.F=20;state.theta=90;state.support=true;
     state.beam={a:1,P:20};state.friction={alpha:30,mu:.4};state.material={E:200000,yield:250,maxStrain:.002,H:1000};
     const p=l.setup||{};
     if(p.material)state.material={...state.material,...p.material};
@@ -19,19 +24,20 @@
     for(const k of ['alpha','mu']) if(p[k]!==undefined) state.friction[k]=p[k];
   }
   function valid(s) {
-    return s&&s.schema===3&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
-      &&Number.isInteger(s.level)&&finite(s.level,0,levels.length)&&Number.isInteger(s.unit)&&finite(s.unit,0,units.length-1)
+    return s&&(s.schema===3||s.schema===4)&&['statics','axial'].includes(s.curriculum||'statics')&&['teach','free'].includes(s.mode)&&scenes.includes(s.scene)
+      &&Number.isInteger(s.level)&&finite(s.level,0,activeLevels().length)&&Number.isInteger(s.unit)&&finite(s.unit,0,activeUnits().length-1)
       &&['op','answer','passed'].includes(s.phase)&&finite(s.x,.2,2)&&finite(s.F,0,80)&&finite(s.theta,0,180)&&typeof s.support==='boolean'
-      &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)&&s.material&&finite(s.material.E,1,1000000)&&finite(s.material.yield,0.001,100000)&&finite(s.material.maxStrain,0.000001,1)&&finite(s.material.H,0,1000000)
+      &&s.beam&&finite(s.beam.a,.2,3.8)&&finite(s.beam.P,0,60)&&s.friction&&finite(s.friction.alpha,0,60)&&finite(s.friction.mu,0,1)&&s.material&&finite(s.material.E,1,1000000)&&finite(s.material.yield,0.001,100000)&&finite(s.material.maxStrain,0.000001,1)&&finite(s.material.H,0,1000000)&&s.axial&&finite(s.axial.force,-1000000,1000000)&&finite(s.axial.area,0.001,1000000)&&finite(s.axial.length,0.001,1000000)&&finite(s.axial.youngsModulus,1,1000000)&&finite(s.axial.yieldStress,0.001,1000000)&&finite(s.axial.safetyFactor,0.001,100)
       &&Number.isInteger(s.hints)&&finite(s.hints,0,4)&&Number.isInteger(s.wrong)&&finite(s.wrong,0,100000)
       &&s.completed&&typeof s.completed==='object'&&!Array.isArray(s.completed)
-      &&Object.entries(s.completed).every(([id,v])=>levels.some(l=>l.id===id)&&v&&typeof v.independent==='boolean'&&typeof v.assisted==='boolean'&&finite(v.hintLevel,0,4))
+      &&Object.entries(s.completed).every(([id,v])=>activeLevels().some(l=>l.id===id)&&v&&typeof v.independent==='boolean'&&typeof v.assisted==='boolean'&&finite(v.hintLevel,0,4))
       &&s.slots&&typeof s.slots==='object'&&!Array.isArray(s.slots);
   }
   let restored=false;
   try {
     const saved=JSON.parse(localStorage.getItem(KEY));
-    if(valid(saved)){state=saved;restored=true;}
+    if(saved&&saved.schema===3){const migrated=base();migrated.mode=saved.mode||'teach';migrated.level=Math.min(saved.level||0,staticsLevels.length);migrated.unit=Math.min(saved.unit||0,staticsUnits.length-1);migrated.phase=['op','answer','passed'].includes(saved.phase)?saved.phase:'op';migrated.scene=saved.scene||'lever';migrated.x=saved.x??migrated.x;migrated.F=saved.F??migrated.F;migrated.theta=saved.theta??migrated.theta;migrated.support=saved.support??migrated.support;migrated.completed=saved.completed||{};migrated.slots=saved.slots||{};state=migrated;restored=true;notice('已迁移静力学进度；材料力学章节保持独立记录。');}
+    else if(valid(saved)){state=saved;restored=true;}
     else {
       const old=JSON.parse(localStorage.getItem('mechanics-playground-v2'));
       if(old&&Array.isArray(old.done)) notice(`旧样板完成 ${old.done.length}/3 关，原记录保留。扩展课程从第一关开始，不将旧进度算成新关掌握。`);
@@ -63,6 +69,7 @@
   }
   function altDraw(){
     if(state.scene==='material'){renderMaterial();return;}
+    if(state.scene==='axial-bar'){renderAxial();return;}
     const p=state.scene==='beam'?state.beam:state.friction;
     window.StaticsScenes.render(state.scene,$('#alternateScene'),p);
     const c=window.StaticsScenes.calculate(state.scene,p);
@@ -71,6 +78,7 @@
     $('#reactionBox').textContent=state.scene==='beam'?`RA=${fmt(c.RA)} kN，RB=${fmt(c.RB)} kN，Mmax=${fmt(c.Mmax)} kN·m。`:
       state.scene==='friction'?`N=${fmt(c.N)} N；所需静摩擦=${fmt(c.driving)} N；上限=${fmt(c.maxF)} N。${c.static?'可以静止，实际摩擦按需求取值。':'不能保持静止；未指定动摩擦系数，不计算滑动摩擦或运动。'}`:'固定铰：两个力分量；水平滚动支座：竖直反力；固定端：两个力分量与一个约束力矩。';
   }
+  function renderAxial(){const p=state.axial,host=$('#alternateScene'),r=window.AxialScene.calculate(p);window.AxialScene.render(host,p);$('#statusTag').textContent=r.elastic?'轴向杆 · 弹性范围':'轴向杆 · 超过许用范围';$('#explain').textContent='平均正应力 σ=N/A；应变 ε=σ/E；伸长 δ=εL。单位采用 N、mm²、mm、MPa。';$('#reactionBox').textContent=`σ=${r.stress.toFixed(2)} MPa；ε=${r.strain.toExponential(3)}；δ=${r.elongation.toFixed(3)} mm；利用率=${r.utilization.toFixed(3)}。`;}
   function renderMaterial(){const p=state.material,host=$('#alternateScene');const n=41,max=Math.max(p.maxStrain,p.yield/p.E*1.5),pts=[];for(let i=0;i<n;i++){const e=-max+2*max*i/(n-1),s=Math.abs(e)<=p.yield/p.E?p.E*e:Math.sign(e)*(p.yield+p.H*(Math.abs(e)-p.yield/p.E));pts.push([e,s]);}const W=720,H=280,px=e=>60+(e+max)/(2*max)*600,py=s=>245-s/(p.yield+p.H*max)*170;host.innerHTML=`<svg class="material-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="双线性应力应变曲线"><line x1="60" y1="245" x2="680" y2="245" class="chart-axis"/><line x1="60" y1="30" x2="60" y2="245" class="chart-axis"/><polyline points="${pts.map(q=>px(q[0])+','+py(q[1])).join(' ')}" class="stress-line"/><line x1="${px(-p.yield/p.E)}" y1="30" x2="${px(-p.yield/p.E)}" y2="245" class="yield-line"/><line x1="${px(p.yield/p.E)}" y1="30" x2="${px(p.yield/p.E)}" y2="245" class="yield-line"/><text x="70" y="24">σ—ε · E=${p.E} MPa · σᵧ=${p.yield} MPa</text><text x="665" y="266">ε</text><text x="36" y="38">σ</text></svg>`;$('#statusTag').textContent='材料试验 · 双线性本构';$('#explain').textContent='弹性区斜率为 E；超过屈服应变后进入线性强化区。当前模型用于教学，不代表完整循环塑性。';$('#reactionBox').textContent=`屈服应变 εᵧ=${(p.yield/p.E).toExponential(3)}；强化模量 H=${p.H} MPa。`}
   function renderScene(){
     const lever=state.scene==='lever';$('#scene').toggleAttribute('hidden',!lever);$('#alternateScene').hidden=lever;$('#alternateControls').hidden=lever;
@@ -80,23 +88,24 @@
     $('#lockHint').textContent=state.mode==='teach'?'本关所需器件可直接使用；自由模式可预览全部器件。':'自由实验开放全部器件，不影响教学记录。';
     $('#openAll').classList.toggle('hidden',state.mode==='free');
     if(lever){for(const[id,key]of[['xRange','x'],['fRange','F'],['thetaRange','theta']]){$('#'+id).value=state[key];$('#'+id).disabled=false;}$('#supportToggle').checked=state.support;$('#supportToggle').disabled=false;calcLever();return;}
-    const config=state.scene==='beam'?[['a','距左支座 a',.2,3.8,.01,'m'],['P','集中荷载 P',0,60,.1,'kN']]:state.scene==='friction'?[['alpha','斜面角 α',0,60,.1,'°'],['mu','静摩擦系数 μ',0,1,.01,'']]:state.scene==='material'?[['E','弹性模量 E',1000,400000,1000,'MPa'],['yield','屈服应力 σᵧ',10,1000,10,'MPa'],['maxStrain','最大应变',.0005,.02,.0005,''],['H','强化模量 H',0,50000,1000,'MPa']]:[];
-    const p=state.scene==='beam'?state.beam:state.scene==='friction'?state.friction:state.material;
+    const config=state.scene==='beam'?[['a','距左支座 a',.2,3.8,.01,'m'],['P','集中荷载 P',0,60,.1,'kN']]:state.scene==='friction'?[['alpha','斜面角 α',0,60,.1,'°'],['mu','静摩擦系数 μ',0,1,.01,'']]:state.scene==='material'?[['E','弹性模量 E',1000,400000,1000,'MPa'],['yield','屈服应力 σᵧ',10,1000,10,'MPa'],['maxStrain','最大应变',.0005,.02,.0005,''],['H','强化模量 H',0,50000,1000,'MPa']]:state.scene==='axial-bar'?[['force','轴力 N',-100000,100000,100,'N'],['area','截面积 A',1,1000,1,'mm²'],['length','长度 L',100,3000,10,'mm'],['youngsModulus','弹性模量 E',1000,400000,1000,'MPa'],['yieldStress','屈服应力 σᵧ',10,1000,10,'MPa'],['safetyFactor','安全系数 n',1,5,.1,'']]:[];
+    const p=state.scene==='beam'?state.beam:state.scene==='friction'?state.friction:state.scene==='material'?state.material:state.axial;
     $('#alternateControls').innerHTML=config.length?config.map(([k,n,min,max,step,u])=>`<label>${n}<output id="alt-${k}">${fmt(p[k])} ${u}</output><input type="range" data-alt-param="${k}" min="${min}" max="${max}" step="${step}" value="${p[k]}" aria-label="${n}"></label>`).join(''):'<p>比较三种约束的反力与自由度；此图为概念示意，无参数需要调整。</p>';
     $$('[data-alt-param]').forEach(el=>el.oninput=()=>{const k=el.dataset.altParam;p[k]=Number(el.value);const u=config.find(c=>c[0]===k)[5];$('#alt-'+k).textContent=fmt(p[k])+' '+u;altDraw();save();});
     altDraw();
   }
-  const current=()=>levels[state.level];
-  function enter(n){state.level=n;state.unit=levels[n].unit;state.mode='teach';state.phase='op';state.hints=0;state.wrong=0;state.slots={};applySetup();$('#cardFeedback').textContent='';render();save();}
-  function advance(){const n=state.level+1;if(n<levels.length)enter(n);else{state.level=levels.length;state.phase='op';render();save();}}
+  const current=()=>activeLevels()[state.level];
+  function enter(n){state.level=n;state.unit=activeLevels()[n].unit;state.mode='teach';state.phase='op';state.hints=0;state.wrong=0;state.slots={};applySetup();$('#cardFeedback').textContent='';render();save();}
+  function advance(){const n=state.level+1;if(n<activeLevels().length)enter(n);else{state.level=activeLevels().length;state.phase='op';render();save();}}
   function renderLevels(){
+    const units=activeUnits();
     $('#unitSelect').innerHTML=units.map((n,i)=>`<option value="${i}">${i+1} · ${n}</option>`).join('');$('#unitSelect').value=state.unit;
-    $('#levelList').innerHTML=levels.map((l,i)=>({l,i})).filter(({l})=>l.unit===state.unit).map(({l,i})=>{
-      const c=state.completed[l.id];return `<button class="progress-item ${i===state.level?'current':''} ${c?'done':''}" data-level="${i}"><span class="num">${c?'✓':i+1}</span><span>${l.title}</span><small>${c?(c.independent?'独立完成 · 可复习':'辅助完成 · 待独立复习'):'可挑战'}</small></button>`;
+    $('#levelList').innerHTML=activeLevels().map((l,i)=>({l,i})).filter(({l})=>l.unit===state.unit).map(({l,i})=>{
+      const c=(isAxial()?state.axialCompleted:state.completed)[l.id];return `<button class="progress-item ${i===state.level?'current':''} ${c?'done':''}" data-level="${i}"><span class="num">${c?'✓':i+1}</span><span>${l.title}</span><small>${c?(c.independent?'独立完成 · 可复习':'辅助完成 · 待独立复习'):'可挑战'}</small></button>`;
     }).join('');
     $$('[data-level]').forEach(b=>b.onclick=()=>{enter(Number(b.dataset.level));notice('已进入关卡。可自由选择单元，推荐按顺序学习；新尝试从零级提示开始。');});
-    const total=Object.keys(state.completed).length,independent=Object.values(state.completed).filter(c=>c.independent).length;
-    $('#progressText').textContent=`${total}/20 · 独立 ${independent}`;
+    const record=isAxial()?state.axialCompleted:state.completed,total=Object.keys(record).length,independent=Object.values(record).filter(c=>c.independent).length;
+    $('#progressText').textContent=`${total}/${activeLevels().length} · 独立 ${independent}`;
   }
   function renderCards(){
     const entries=[['object','研究对象',state.scene==='friction'?'研究斜面上的块体。重力、法向反力与摩擦均为外力。':state.scene==='beam'?'研究整根简支梁。不要将支座反力与外加集中载荷混淆。':'先隔离研究对象，再将约束替换为正确的反力。'],['condition','适用条件',$('#explain').textContent],['balance','平衡关系',state.scene==='friction'?'静摩擦大小按需要取值；只有达到临界时才等于 μN。':'平面刚体静止：ΣFx=0，ΣFy=0，ΣM=0。'],['moment','方法选择',state.scene==='friction'?'沿斜面和法向分解，先求 N，再比较下滑分量与 μN。':'优先选能消去未知力的点取矩，但所有平衡条件仍需满足。'],['check','结果检查','检查单位、正负方向、适用条件。提示不扣分；完整讲解后建议再做独立复习。']];
@@ -112,8 +121,8 @@
     return false;
   }
   function markComplete(forceAssisted=false){
-    const l=current(),old=state.completed[l.id],assisted=forceAssisted||state.hints>0;
-    state.completed[l.id]={assisted:!!(old?.assisted||assisted),hintLevel:Math.max(old?.hintLevel||0,state.hints),independent:!!(old?.independent||!assisted)};
+    const l=current(),record=isAxial()?state.axialCompleted:state.completed,old=record[l.id],assisted=forceAssisted||state.hints>0;
+    record[l.id]={assisted:!!(old?.assisted||assisted),hintLevel:Math.max(old?.hintLevel||0,state.hints),independent:!!(old?.independent||!assisted)};
     renderLevels();save();
   }
   function renderHints(){
@@ -159,6 +168,8 @@
     renderScene();renderLevels();renderCards();renderChallenge();
   }
   $('#unitSelect').onchange=e=>{state.unit=Number(e.target.value);renderLevels();save();};
+  $('#staticsCourseBtn').onclick=()=>{state.curriculum='statics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学静力学，原材料章节进度保留。');};
+  $('#axialCourseBtn').onclick=()=>{state.curriculum='axial';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到材料力学轴向杆，静力学进度保留。');};
   $('#scenePicker').onchange=e=>{if(state.mode!=='free')return;state.scene=e.target.value;render();save();};
   for(const [id,k]of[['xRange','x'],['fRange','F'],['thetaRange','theta']])$('#'+id).oninput=e=>{state[k]=Number(e.target.value);calcLever();save();};
   $('#fNumber').onchange=e=>{const n=Number(e.target.value);if(e.target.value.trim()===''||!finite(n,0,80)){notice('请输入0～80 N，可带小数。');e.target.value=state.F;return;}state.F=n;$('#fRange').value=n;calcLever();save();};

@@ -97,7 +97,7 @@
         </section>
         <section class="panel progress">
           <div class="panel-head"><span>任务册</span><span id="progressText">0 / 20</span></div>
-          <label for="unitSelect">学习单元</label><select id="unitSelect" aria-label="选择学习单元"></select>
+          <div class="course-switch"><button id="staticsCourseBtn" type="button" class="outline-btn">理论力学 · 静力学</button><button id="axialCourseBtn" type="button" class="outline-btn">材料力学 · 轴向杆</button></div><label for="unitSelect">学习单元</label><select id="unitSelect" aria-label="选择学习单元"></select>
           <div id="levelList"></div>
         </section>
         <details class="panel reasoning" id="reasoningDetails">
@@ -115,10 +115,13 @@
   </main>
   <dialog id="resetDialog"><form method="dialog"><h3>确认重置？</h3><p>会清除本机保存的教学进度与卡牌记录。</p><div><button value="cancel" class="outline-btn">取消</button><button value="reset" class="solid-btn">确认重置</button></div></form></dialog>
   <script src="curriculum.js?v=statics-1"></script>
+  <script src="materials-curriculum.js?v=1"></script>
+  <script src="axial-scene.js?v=1"></script>
   <script src="engine-browser.js?v=1"></script>
   <script src="statics-scenes.js?v=statics-1"></script>
   <script src="playground.js?v=statics-1"></script>
   <script src="workspace-layout.js?v=1"></script>
+  <link rel="stylesheet" href="axial-chapter.css?v=1">
   <script src="release-view.js?v=1"></script>
   <script>window.MathJax={startup:{typeset:false},svg:{fontCache:'local'},options:{enableMenu:false,enableAssistiveMml:false},loader:{load:[]}};</script>
   <script src="vendor/mathjax-tex-svg.js"></script>
