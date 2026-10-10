@@ -1,4 +1,4 @@
-.workspace-tabs{display:flex;gap:4px;flex-shrink:0;background:#e2e7e2;padding:4px;border-radius:8px}
+.motion-actions{display:flex;gap:4px;align-items:center;margin-left:auto}.motion-actions button{font-size:11px;padding:5px 8px}.motion-readout{font-size:11px;color:#6b7d76;margin-left:8px}.workspace-tabs{display:flex;gap:4px;flex-shrink:0;background:#e2e7e2;padding:4px;border-radius:8px}
 .workspace-tabs button{flex:1;padding:9px 4px;border:0;border-radius:5px;color:#53645f;background:transparent;font-size:13px}
 .workspace-tabs button[aria-pressed=true]{background:white;color:#275b55;box-shadow:0 1px 4px #30453c14}
 .workspace-notes{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px}

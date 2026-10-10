@@ -64,6 +64,7 @@
         <div class="panel controls">
           <div class="panel-head">
             <span>02 / 器件台</span>
+            <div class="motion-actions"><button id="releaseBtn" type="button" class="outline-btn">释放观察</button><button id="pauseBtn" type="button" class="text-btn" disabled>暂停</button><button id="resetMotionBtn" type="button" class="text-btn" disabled>复位</button></div>
             <button id="openAll" class="outline-btn hidden">自由探索 · 全部可用</button>
           </div>
           <label class="scene-choice">自由实验器件 <select id="scenePicker"><option value="lever">杆件与力矩</option><option value="support">约束与反力</option><option value="beam">简支梁</option><option value="friction">斜面静摩擦</option></select></label>
@@ -114,9 +115,11 @@
   </main>
   <dialog id="resetDialog"><form method="dialog"><h3>确认重置？</h3><p>会清除本机保存的教学进度与卡牌记录。</p><div><button value="cancel" class="outline-btn">取消</button><button value="reset" class="solid-btn">确认重置</button></div></form></dialog>
   <script src="curriculum.js?v=statics-1"></script>
+  <script src="engine-browser.js?v=1"></script>
   <script src="statics-scenes.js?v=statics-1"></script>
   <script src="playground.js?v=statics-1"></script>
   <script src="workspace-layout.js?v=1"></script>
+  <script src="release-view.js?v=1"></script>
   <script>window.MathJax={startup:{typeset:false},svg:{fontCache:'local'},options:{enableMenu:false,enableAssistiveMml:false},loader:{load:[]}};</script>
   <script src="vendor/mathjax-tex-svg.js"></script>
   <script src="formula-guide.js?v=1"></script>
