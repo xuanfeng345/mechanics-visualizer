@@ -1,0 +1,14 @@
+/BATCH
+/CLEAR,NOSTART
+/PREP7
+! Independent arithmetic baseline; solver/license smoke test, not FEA validation.
+L=4
+Q=20
+REACTION=Q*L/2
+MOMENT=Q*L*L/8
+*CFOPEN,baseline-result,txt
+*VWRITE,REACTION,MOMENT
+('REACTION_KN=',F12.6,' MOMENT_KNM=',F12.6)
+*CFCLOS
+FINISH
+/EXIT,NOSAVE

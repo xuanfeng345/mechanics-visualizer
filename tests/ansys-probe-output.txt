@@ -1,0 +1,130 @@
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+
+ ANSYS LICENSE MANAGER ERROR:
+ Unable to connect to or start local server.
+
+ *** ERROR - ANSYS license not available.
+
++--------------------- M A P D L   S T A T I S T I C S ------------------------+
+
+Release: 2023 R2            Build: 23.2       Update: UP20230531   Platform: WINDOWS x64 
+Date Run: 10/05/2026   Time: 03:30     Process ID: 19728
+Operating System: Windows 11  (Build: 26200)
+
+Processor Model: Intel(R) Core(TM) i5-10200H CPU @ 2.40GHz
+
+Compiler: Intel(R) Fortran Compiler Version 19.0.5  (Build: 20190815)
+          Intel(R) C/C++ Compiler Version 19.0.5  (Build: 20190815)
+          Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191125
+          BLAS Library supplied by Intel(R) MKL
+
+Number of machines requested            :    1
+Total number of cores available         :    8
+Number of physical cores available      :    4
+Number of processes requested           :    1
+Number of threads per process requested :    1
+Total number of cores requested         :    1 (Shared Memory Parallel)                    
+
+GPU Acceleration: Not Requested
+
+Job Name: mechanics_probe
+Working Directory: 
+
+Total CPU time for main thread                    :        0.6 seconds
+Total CPU time summed for all threads             :        0.4 seconds
+
+Elapsed time spent obtaining a license            :        0.0 seconds
+Elapsed time spent pre-processing model (/PREP7)  :        0.0 seconds
+Elapsed time spent solution - preprocessing       :        0.0 seconds
+Elapsed time spent computing solution             :        0.0 seconds
+Elapsed time spent solution - postprocessing      :        0.0 seconds
+Elapsed time spent post-processing model (/POST1) :        0.0 seconds
+ 
+
+Sum of disk space used on all processes            :        0.0 MB
+
+Sum of memory used on all processes               :        2.0 MB
+Sum of memory allocated on all processes          :        0.0 MB
+Physical memory available                         :         16 GB
+Total amount of I/O written to disk               :        0.0 GB
+Total amount of I/O read from disk                :        0.0 GB
+
++------------------ E N D   M A P D L   S T A T I S T I C S -------------------+
+
+
+ *-----------------------------------------------------------------------------*
+ |                                                                             |
+ |                               RUN COMPLETED                                 |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Ansys MAPDL 2023 R2         Build 23.2         UP20230531    WINDOWS x64   |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Database Requested(-db)     1024 MB     Scratch Memory Requested      0 MB |
+ |  Max Database Used(Master)      1 MB     Max Scratch Used(Master)      1 MB |
+ |  Max Database Used(Workers)     0 MB     Max Scratch Used(Workers)     0 MB |
+ |  Sum Database Used(All)         1 MB     Sum Scratch Used(All)         1 MB |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |        CP Time      (sec) =          0.359       Time  =  03:30:12          |
+ |        Elapsed Time (sec) =          2.000       Date  =  10/05/2026        |
+ |                                                                             |
+ *-----------------------------------------------------------------------------*

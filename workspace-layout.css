@@ -1,0 +1,32 @@
+.workspace-tabs{display:flex;gap:4px;flex-shrink:0;background:#e2e7e2;padding:4px;border-radius:8px}
+.workspace-tabs button{flex:1;padding:9px 4px;border:0;border-radius:5px;color:#53645f;background:transparent;font-size:13px}
+.workspace-tabs button[aria-pressed=true]{background:white;color:#275b55;box-shadow:0 1px 4px #30453c14}
+.workspace-notes{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media(min-width:851px){
+ html,body{height:100%;overflow:hidden}
+ body{display:flex;flex-direction:column}
+ .topbar{padding:8px 24px;flex:0 0 auto}.topbar h1{font-size:19px}
+ main{flex:1;min-height:0;display:flex;flex-direction:column}
+ .intro{padding:8px 24px;flex:0 0 auto;min-height:52px}.intro h2{font-size:18px;margin:0}.intro .kicker,.intro>div>p:not(.kicker){display:none}
+ .intro-actions{flex-direction:row;max-width:65%;align-items:center}#interactionNotice{max-width:340px;line-height:1.4}
+ .layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 360px;padding:4px 24px 16px;gap:16px;overflow:hidden}
+ .lab-column{min-height:0;display:grid;grid-template-rows:minmax(180px,1fr) auto;gap:10px}
+ .apparatus{min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:12px}
+ .apparatus .panel-head{flex:0 0 auto;margin-bottom:4px}
+ .apparatus #scene{flex:1;min-height:0;height:100%;max-height:none;width:100%}
+ #alternateScene{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+ #alternateScene svg{width:100%;height:100%;max-height:none;min-height:0}
+ .readouts{flex:0 0 auto}.readouts div{padding:7px 10px}
+ .controls{padding:10px 14px;max-height:270px;overflow:auto}.controls .panel-head{margin-bottom:6px;padding-bottom:4px}
+ .scene-choice{display:flex;align-items:center;gap:12px;margin:0;font-size:12px}#scenePicker{margin:3px 0;padding:4px}
+ .control-grid{gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}.support-control{grid-column:1/-1!important;margin:0!important}
+ .controls .hint{display:none}.lock-hint{margin-top:5px;font-size:11px}.control-grid input[type=range]{margin:3px 0}.control-grid output{margin:0}
+ .side-column{display:flex;min-height:0;overflow:hidden;gap:10px}
+ .side-column>.challenge,.side-column>.progress{order:0;min-height:0;overflow:auto;flex:1;margin:0}
+ .workspace-tabs{order:-5}.workspace-notes{flex:1}
+ .hint-toolbar{position:sticky;bottom:0;background:white;padding:10px 0;z-index:1}
+ .challenge h3{margin:8px 0}.challenge p{line-height:1.65}.hint-content p{font-size:12px}
+ .explanation summary,.reasoning>summary{font-size:13px}.explanation{padding-top:10px}
+}
+@media(min-width:851px) and (max-height:700px){.topbar .eyebrow{display:none}.controls{max-height:220px}.panel-head{font-size:10px}.topbar{padding-block:5px}.intro{padding-block:4px;min-height:40px}}
+@media(max-width:850px){.workspace-tabs{order:-3}.side-column{display:contents}.workspace-notes{order:4}.workspace-notes .reasoning,.workspace-notes .explanation{margin-bottom:10px}.intro>div>p:not(.kicker){display:none}}

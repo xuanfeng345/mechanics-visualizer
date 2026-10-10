@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>力学实验场 · 机构桌游</title>
+  <link rel="stylesheet" href="playground.css">
+  <link rel="stylesheet" href="workspace-layout.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">MECHANICS LAB / 01</span>
+      <h1>力学实验场</h1>
+    </div>
+    <nav>
+      <a href="index.html">旧站入口</a>
+      <a href="index.html?concept=force-couple">知识卡：力与力偶</a>
+      <button id="resetBtn" class="text-btn">重置进度</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <p class="kicker">平面装置 · 教学闯关 / 自由实验</p>
+        <h2>先观察，再做出判断。</h2>
+        <p>把作用点、方向与支座当作真实的工程条件。静力不平衡时，系统不会“自动平衡”或播放假动画。</p>
+      </div>
+      <div class="intro-actions">
+        <div class="mode-switch" aria-label="实验模式">
+          <button data-mode="teach" class="mode active">教学模式</button>
+          <button data-mode="free" class="mode">自由模式</button>
+        </div>
+        <div id="interactionNotice" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="lab-column">
+        <div class="panel apparatus">
+          <div class="panel-head">
+            <span>01 / 平面装置</span>
+            <span id="statusTag" class="tag">静止分析</span>
+          </div>
+          <svg id="scene" viewBox="0 0 760 330" role="img" aria-label="水平杆与铰支座示意图">
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="currentColor" stroke-width="1.3"/></marker></defs>
+            <line x1="70" y1="286" x2="690" y2="286" class="ground"/><path d="M100 214 L70 270 L130 270 Z" class="support"/><circle cx="100" cy="214" r="10" class="hinge"/>
+            <line id="beam" x1="100" y1="214" x2="680" y2="214" class="beam"/><line x1="100" y1="130" x2="680" y2="130" class="dimline"/><line x1="100" y1="124" x2="100" y2="136" class="dimtick"/><line x1="680" y1="124" x2="680" y2="136" class="dimtick"/><text x="384" y="120" text-anchor="middle">L = 2 m</text>
+            <g id="weightForce"><line x1="390" y1="214" x2="390" y2="258" class="force weight" marker-end="url(#arrow)"/><text x="402" y="256">W = 20 N</text></g>
+            <g id="appliedForce"><line id="forceLine" x1="450" y1="214" x2="510" y2="166" class="force applied" marker-end="url(#arrow)"/><circle id="pointHandle" cx="450" cy="214" r="8" class="handle" tabindex="0"/><text id="forceLabel" x="520" y="160" title="外加载荷">F</text><text id="xLabel" x="450" y="205" text-anchor="middle">x</text></g>
+            <g id="reaction"><line id="ryLine" x1="100" y1="214" x2="100" y2="174" class="force reaction" marker-end="url(#arrow)"/><line id="rxLine" x1="100" y1="214" x2="140" y2="214" class="force reaction" marker-end="url(#arrow)"/><text id="ryText" x="112" y="177">R<tspan baseline-shift="sub">y</tspan></text><text id="rxText" x="140" y="207">R<tspan baseline-shift="sub">x</tspan></text></g>
+            <text x="100" y="308" text-anchor="middle">铰 A</text><text x="680" y="308" text-anchor="middle">端点 B</text>
+          </svg>
+          <div id="alternateScene" hidden></div>
+          <div class="readouts">
+            <div><span title="不含支座反力">外载 ΣFx</span><strong id="sumFx">0.0 N</strong></div>
+            <div><span title="不含支座反力">外载 ΣFy</span><strong id="sumFy">0.0 N</strong></div>
+            <div><span>ΣM<sub>A</sub></span><strong id="moment">0.0 N·m</strong></div>
+            <div><span>判定</span><strong id="equilibrium">未平衡</strong></div>
+          </div>
+        </div>
+
+        <div class="panel controls">
+          <div class="panel-head">
+            <span>02 / 器件台</span>
+            <button id="openAll" class="outline-btn hidden">自由探索 · 全部可用</button>
+          </div>
+          <label class="scene-choice">自由实验器件 <select id="scenePicker"><option value="lever">杆件与力矩</option><option value="support">约束与反力</option><option value="beam">简支梁</option><option value="friction">斜面静摩擦</option></select></label>
+          <div id="alternateControls" hidden></div>
+          <div class="control-grid">
+            <label class="support-control"><input id="supportToggle" type="checkbox" checked> 有铰支座（关闭后要求全平衡）</label>
+            <div id="unlockList" class="unlock-list">已解锁工具：作用点 x</div>
+            <label>作用点 x <output id="xOut">1.00 m</output><input id="xRange" type="range" min="0.2" max="2" step="0.01" value="1"></label>
+            <label>力 F <output id="fOut">20 N</output><input id="fRange" type="range" min="0" max="80" step="0.01" value="20"><input id="fNumber" aria-label="精确输入力 F，单位牛顿" type="number" min="0" max="80" step="0.01" value="20" style="width:100%;padding:6px;border:1px solid #d4d8d4;border-radius:4px"></label>
+            <label>向上倾角 θ <output id="thetaOut">90°</output><input id="thetaRange" type="range" min="0" max="180" step="1" value="90"></label>
+          </div>
+          <p id="lockHint" class="lock-hint">器件按任务逐步解锁；拖动圆点或滑块可调整参数。</p>
+          <p class="hint">可拖拽画布上的圆点改变 x；滑块改变 F 与 θ。向上为正，角度从杆的正向计。</p>
+        </div>
+
+        <details class="panel explanation" id="formulaDetails">
+          <summary class="panel-head"><span>03 / 公式检查</span><span class="formula-chip">只计算，不伪造运动</span></summary>
+          <p id="explain">取 A 点矩：ΣM<sub>A</sub> = xFsinθ − WL/2。若不为零，杆处于不平衡静力状态，不能宣称静止。</p>
+          <div class="reaction-box" id="reactionBox">平衡时支反力：R<sub>x</sub> = −ΣF<sub>x,外</sub>，R<sub>y</sub> = −ΣF<sub>y,外</sub>。</div>
+        </details>
+      </div>
+
+      <aside class="side-column">
+        <nav class="workspace-tabs" aria-label="学习面板"><button type="button" data-pane="task" aria-pressed="true">当前任务</button><button type="button" data-pane="map" aria-pressed="false">章节地图</button><button type="button" data-pane="notes" aria-pressed="false">知识与公式</button></nav>
+        <section class="panel challenge" id="challenge">
+          <div class="panel-head"><span>当前关卡</span><span id="phaseText">操作阶段</span></div>
+          <div id="challengeBody"></div>
+          <div class="hint-toolbar"><button id="hintButton" type="button" class="outline-btn">需要提示？</button><span id="hintStatus">不扣分 · 随时求助</span></div>
+          <div id="hintContent" class="hint-content" aria-live="polite"></div>
+        </section>
+        <section class="panel progress">
+          <div class="panel-head"><span>任务册</span><span id="progressText">0 / 20</span></div>
+          <label for="unitSelect">学习单元</label><select id="unitSelect" aria-label="选择学习单元"></select>
+          <div id="levelList"></div>
+        </section>
+        <details class="panel reasoning" id="reasoningDetails">
+          <summary>推理工具 · 需要时展开</summary>
+          <section class="cards">
+            <div class="panel-head"><span>推理卡牌</span><button id="clearCards" class="text-btn">清空</button></div>
+            <p class="small">点击任意卡片查看思路，可反复阅读；不需要按顺序刷卡。</p>
+            <div id="cardTray" class="card-tray"></div>
+            <div id="cardSlots" class="card-slots"><div class="slot" data-slot="object">研究对象</div><div class="slot" data-slot="condition">条件</div><div class="slot" data-slot="balance">平衡</div><div class="slot" data-slot="moment">取矩</div><div class="slot" data-slot="check">检查</div></div>
+            <div id="cardFeedback" class="feedback" aria-live="polite"></div>
+          </section>
+        </details>
+      </aside>
+    </section>
+  </main>
+  <dialog id="resetDialog"><form method="dialog"><h3>确认重置？</h3><p>会清除本机保存的教学进度与卡牌记录。</p><div><button value="cancel" class="outline-btn">取消</button><button value="reset" class="solid-btn">确认重置</button></div></form></dialog>
+  <script src="curriculum.js?v=statics-1"></script>
+  <script src="statics-scenes.js?v=statics-1"></script>
+  <script src="playground.js?v=statics-1"></script>
+  <script src="workspace-layout.js?v=1"></script>
+  <script>window.MathJax={startup:{typeset:false},svg:{fontCache:'local'},options:{enableMenu:false,enableAssistiveMml:false},loader:{load:[]}};</script>
+  <script src="vendor/mathjax-tex-svg.js"></script>
+  <script src="formula-guide.js?v=1"></script>
+  <link rel="stylesheet" href="formula-guide.css?v=1">
+</body>
+</html>

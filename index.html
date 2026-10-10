@@ -5,9 +5,8 @@
     <title>三力学 AI 可视化学习工具</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="styles.css" />
-    <!-- Three.js CDN -->
-    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="stylesheet" href="teaching-theme.css" />
+    <!-- 当前没有与各模型对应的 3D 求解器；不加载失效的旧版 OrbitControls。 -->
     <!-- MathJax -->
     <script>
       window.MathJax = {
@@ -28,6 +27,7 @@
           </div>
         </div>
         <nav class="top-nav">
+          <a class="nav-btn" href="playground.html">进入力学操练场 ↗</a>
           <button class="nav-btn nav-btn-active" data-subject="tl">理论力学</button>
           <button class="nav-btn" data-subject="jl">结构力学</button>
           <button class="nav-btn" data-subject="cl">材料力学</button>
@@ -44,7 +44,7 @@
               <div class="panel-title">可视化模型</div>
               <div class="panel-tabs">
                 <button class="tab-btn tab-btn-active" data-mode="2d">2D 模式</button>
-                <button class="tab-btn" data-mode="3d">3D 模式</button>
+                <button class="tab-btn" data-mode="3d" disabled title="原版本仅为通用立方体占位，不是当前模型的三维计算。待逐模型实现后开放。">3D · 待实现</button>
               </div>
             </div>
             <div class="visual-wrapper">
@@ -65,7 +65,7 @@
                     </defs>
                     <!-- 标题和说明（放在SVG内部左上方） -->
                     <text x="16" y="32" fill="#ffffff" font-size="12" font-weight="600">门板 / 扳手模型</text>
-                    <text x="16" y="52" fill="#a8afc4" font-size="12">演示力对点的矩：M = F × d，其中F是力的大小，d是力臂（力的作用线到点的垂直距离）</text>
+                    <text x="16" y="52" fill="#a8afc4" font-size="12">平面力矩模型：拖动作用点，力始终竖直向下；d 为水平力臂，M = −Fd（逆时针为正），铰点至右边缘为 0.90 m。</text>
                   </svg>
                   <div class="visual-hud">
                     <div class="hud-item">
@@ -118,7 +118,7 @@
                     </defs>
                     <!-- 标题和说明（放在SVG内部左上方） -->
                     <text x="16" y="32" fill="#ffffff" font-size="12" font-weight="600">三力平衡 · 三力汇交定理</text>
-                    <text x="16" y="52" fill="#a8afc4" font-size="12">演示三力平衡时，三力作用线必汇交于一点</text>
+                    <text x="16" y="52" fill="#a8afc4" font-size="12">刚体受三个非平行共面力平衡：作用线汇交，且矢量和为零</text>
                     <!-- 刚体 -->
                     <polygon points="150,180 250,180 280,240 120,240" fill="#263238" stroke="#81d4fa" stroke-width="2" />
                     <!-- 三力汇交点 -->
@@ -126,7 +126,7 @@
                     <!-- 三个力 -->
                     <line x1="200" y1="210" x2="200" y2="140" stroke="#ff8a65" stroke-width="3" marker-end="url(#arrow-head-3f)" />
                     <line x1="200" y1="210" x2="280" y2="210" stroke="#4dd0e1" stroke-width="3" marker-end="url(#arrow-head-3f)" />
-                    <line x1="200" y1="210" x2="160" y2="280" stroke="#ffd54f" stroke-width="3" marker-end="url(#arrow-head-3f)" />
+                    <line x1="200" y1="210" x2="120" y2="280" stroke="#ffd54f" stroke-width="3" marker-end="url(#arrow-head-3f)" />
                   </svg>
                   <div class="visual-hud">
                     <div class="hud-item">
@@ -159,7 +159,7 @@
                     <text x="110" y="125" fill="#ff8a65" font-size="12">F</text>
                     <text x="290" y="280" fill="#ff8a65" font-size="12">F</text>
                     <!-- 力偶臂 -->
-                    <line x1="120" y1="170" x2="280" y2="230" stroke="#ffd54f" stroke-width="2" stroke-dasharray="4 4" />
+                    <line x1="120" y1="205" x2="280" y2="205" stroke="#ffd54f" stroke-width="2" stroke-dasharray="4 4" />
                     <text x="190" y="205" fill="#ffd54f" font-size="11">d</text>
                     <!-- 力偶矩表示（双箭头） -->
                     <path d="M 200,200 L 200,120" stroke="#7c4dff" stroke-width="2" fill="none" marker-end="url(#arrow-head-couple)" marker-start="url(#arrow-head-couple)" />
@@ -8191,6 +8191,7 @@
     </div>
 
     <script src="main.js"></script>
+    <script src="review.js"></script>
   </body>
 </html>
 

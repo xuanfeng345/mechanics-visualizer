@@ -86,11 +86,15 @@ function updateMultiForcePanelHUD(Lval = 0.9, Fval = 120) {
   if (!hudL || !hudFR || !hudMO) return;
   const Lclamp = Math.max(0.5, Math.min(1.5, Lval));
   const Fclamp = Math.max(50, Math.min(400, Fval));
-  const FR = Fclamp * 3; // 示意：3个力合成
-  const MO = Fclamp * Lclamp; // 简化计算
+  // x 向右、y 向上；三力大小均为 F，F3 向左下45°。
+  // 图中 O=(140,200)，门宽140 px对应 L；用 r×F 求矩。
+  const Fx = Fclamp * (1 - Math.SQRT1_2);
+  const Fy = Fclamp * (1 - Math.SQRT1_2);
+  const FR = Math.hypot(Fx, Fy);
+  const MO = Fclamp * Lclamp * (50 / 140 - Math.SQRT1_2);
   hudL.textContent = `${Lclamp.toFixed(2)} m`;
-  hudFR.textContent = `${FR.toFixed(0)} N (示意)`;
-  hudMO.textContent = `${MO.toFixed(1)} N·m`;
+  hudFR.textContent = `${FR.toFixed(2)} N（Fx = Fy = ${Fx.toFixed(2)} N）`;
+  hudMO.textContent = `${MO.toFixed(2)} N·m（逆时针为正）`;
 }
 
 function updatePointKinematicsHUD(Rmeters = 1.0, vval = 2.0, at = 0, an = 0) {
@@ -221,10 +225,10 @@ btnGenerate.addEventListener("click", () => {
   } else if (currentModelId === "three-force-equilibrium") {
     gqLabel.textContent = "自动生成 · 三力平衡与三力汇交定理";
     gqStem.innerHTML =
-      `一刚体受三个力作用而平衡：F1 = ${load.toFixed(0)} N（方向已知），F2 和 F3 的大小和方向均未知。` +
-      `<br/>① 应用三力汇交定理，确定三力作用线的汇交点；` +
-      `<br/>② 列出平衡条件：所有x方向力的和 = 0，所有y方向力的和 = 0，求解 F2 和 F3；` +
-      `<br/>③ 说明为什么三力平衡时只需要两个平衡方程，而不需要力矩方程。` +
+      `一刚体受三个共面汇交力作用而平衡：F1 = ${load.toFixed(0)} N，竖直向上；F2 水平向右；F3 向左下，其方向分量之比为 Fx:Fy = −8:−7（与图一致）。` +
+      `<br/>① 说明非平行三力平衡时汇交的必要性；` +
+      `<br/>② 由 ΣFx=0、ΣFy=0 求 F2、F3 的大小；` +
+      `<br/>③ 验证对汇交点的合矩为零，并解释“汇交”为什么不是平衡的充分条件。平行三力平衡不适用有限汇交点结论。` +
       `<br/><br/>上方"三力平衡"模型演示了三力汇交定理的几何关系。`;
   } else if (currentModelId === "force-couple-simplification") {
     gqLabel.textContent = "自动生成 · 力偶的简化与合成";
@@ -837,123 +841,41 @@ if (questionModelSelect) {
 function initDoorLeverScene() {
   const svg = document.getElementById("door-lever-svg");
   const handle = document.getElementById("door-handle");
-  const forceLine = document.getElementById("door-force");
-  const hudArm = document.getElementById("hud-lever-arm");
-  const hudMoment = document.getElementById("hud-lever-moment");
-  if (!svg || !handle || !forceLine || !hudArm || !hudMoment) return;
-
-  const pivot = { x: 75, y: 204 };
-  let dragging = false;
-
-  const updateForce = (x, y) => {
-    const rect = svg.getBoundingClientRect();
-    const px = x - rect.left;
-    const py = y - rect.top;
-
-    // 把手中心位置：限制在门板范围内
-    const dx = px - pivot.x;
-    const dy = py - pivot.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    const maxR = 220; // 最大距离（门板宽度约210px）
-    const r = Math.min(maxR, dist);
-    const nx = pivot.x + (dx / dist) * r;
-    const ny = Math.max(110, Math.min(290, pivot.y + (dy / dist) * r)); // 限制在门板高度内（y=110到290）
-
-    // 更新把手位置
-    handle.setAttribute("cx", nx);
-    handle.setAttribute("cy", ny);
-
-    // 力的方向：垂直于门板表面，指向开门方向（向右上方）
-    // 门板表面方向：从铰链指向把手中心
-    const doorSurfaceAngle = Math.atan2(ny - pivot.y, nx - pivot.x);
-    const forceAngle = doorSurfaceAngle + Math.PI / 2; // 垂直于门板表面
-    const forceLength = 50; // 力箭头长度
-    const forceEndX = nx + Math.cos(forceAngle) * forceLength;
-    const forceEndY = ny + Math.sin(forceAngle) * forceLength;
-
-    // 更新力箭头
-    forceLine.setAttribute("x1", nx);
-    forceLine.setAttribute("y1", ny);
-    forceLine.setAttribute("x2", forceEndX);
-    forceLine.setAttribute("y2", forceEndY);
-
-    // 计算力臂：力的作用线到铰链的垂直距离
-    // 力的作用线通过 (nx, ny)，方向向量为 (cos(forceAngle), sin(forceAngle))
-    // 点到直线的距离公式：d = |ax0 + by0 + c| / sqrt(a² + b²)
-    // 直线方程：-sin(θ)(x - nx) + cos(θ)(y - ny) = 0
-    // 标准化为：-sin(θ)x + cos(θ)y + sin(θ)nx - cos(θ)ny = 0
-    const sinTheta = Math.sin(forceAngle);
-    const cosTheta = Math.cos(forceAngle);
-    const a = -sinTheta;
-    const b = cosTheta;
-    const c = sinTheta * nx - cosTheta * ny;
-    
-    // 点到直线距离
-    const dPix = Math.abs(a * pivot.x + b * pivot.y + c) / Math.hypot(a, b);
-    
-    // 转换为实际单位（门板宽度约0.9m，SVG中约210px）
-    const doorWidthM = 0.9; // m
-    const doorWidthPix = 210; // px
-    const scale = doorWidthM / doorWidthPix;
-    const d = dPix * scale; // 力臂（m）
-    
-    // 获取力的大小
-    const F = Number(document.getElementById("input-load")?.value || 20); // N
-    
-    // 计算力矩 M = F × d
-    const M = F * d; // N·m
-
-    // 更新HUD显示
-    hudArm.textContent = d.toFixed(3) + " m";
-    hudMoment.textContent = M.toFixed(2) + " N·m";
+  const force = document.getElementById("door-force");
+  if (!svg || !handle || !force) return;
+  const pivot = {x:75, y:204};
+  let point = {x:250, y:204};
+  const update = () => {
+    handle.setAttribute('cx',point.x); handle.setAttribute('cy',point.y);
+    // 平面扳手模型：力始终竖直向下，作用点可移动；逆时针为正。
+    force.setAttribute('x1',point.x); force.setAttribute('y1',point.y);
+    force.setAttribute('x2',point.x); force.setAttribute('y2',point.y+50);
+    const load = Number(document.getElementById('input-load').value);
+    const F = Number.isFinite(load) ? load : 0;
+    const d = (point.x-pivot.x)*0.9/195;
+    document.getElementById('hud-lever-arm').textContent = Math.abs(d).toFixed(3)+' m';
+    document.getElementById('hud-lever-moment').textContent = (-F*d).toFixed(2)+' N·m（逆时针为正）';
+    const grip = svg.querySelector('line[stroke-width="6"]');
+    if (grip) {grip.setAttribute('x1',pivot.x);grip.setAttribute('y1',pivot.y);grip.setAttribute('x2',point.x);grip.setAttribute('y2',point.y);}
   };
-
-  svg.addEventListener("mousedown", (e) => {
-    dragging = true;
-    updateForce(e.clientX, e.clientY);
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-    updateForce(e.clientX, e.clientY);
-  });
-
-  window.addEventListener("mouseup", () => {
-    dragging = false;
-  });
-
-  // 初始状态：把手在门板右侧中间位置
-  const initialHandleX = 270; // 距离铰链约195px，对应约0.84m
-  const initialHandleY = 204; // 门板中间高度（与铰链同高）
-  
-  // 初始化时更新一次
-  const updateInitial = () => {
-    const rect = svg.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      updateForce(rect.left + initialHandleX, rect.top + initialHandleY);
-    } else {
-      // 如果SVG还没渲染好，延迟一下
-      setTimeout(updateInitial, 50);
-    }
+  const move = e => {
+    const matrix = svg.getScreenCTM();
+    if (!matrix) return;
+    const local = new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
+    point = {x:Math.max(75,Math.min(270,local.x)),y:Math.max(125,Math.min(275,local.y))};
+    update();
   };
-  
-  updateInitial();
-  
-  // 当力的大小改变时，重新计算力矩
-  const loadInput = document.getElementById("input-load");
-  if (loadInput) {
-    loadInput.addEventListener("input", () => {
-      if (!dragging) {
-        const handle = document.getElementById("door-handle");
-        if (handle) {
-          const rect = svg.getBoundingClientRect();
-          const cx = Number(handle.getAttribute("cx"));
-          const cy = Number(handle.getAttribute("cy"));
-          updateForce(rect.left + cx, rect.top + cy);
-        }
-      }
-    });
-  }
+  let activePointer = null;
+  svg.style.touchAction='none';
+  svg.addEventListener('pointerdown',e=>{
+    if (e.button !== 0) return;
+    activePointer=e.pointerId; svg.setPointerCapture(e.pointerId); move(e);
+  });
+  svg.addEventListener('pointermove',e=>{if(e.pointerId===activePointer) move(e);});
+  const stop=()=>{activePointer=null;};
+  svg.addEventListener('pointerup',stop); svg.addEventListener('pointercancel',stop);
+  document.getElementById('input-load').addEventListener('input',update);
+  update();
 }
 
 // DeepSeek 解答功能
@@ -1453,17 +1375,17 @@ function initBeamScene() {
   const beamY = 190; // 梁的y坐标，下移避免与文字重合
 
   updateBeamScene = () => {
-    const L = Number(document.getElementById("input-L")?.value || 4.0);
-    const load = Number(document.getElementById("input-load")?.value || 20);
-    const Lclamp = Math.max(1, Math.min(10, L));
-    const qclamp = Math.max(5, Math.min(60, load));
+    const L = Number(document.getElementById("input-L")?.value ?? 4.0);
+    const load = Number(document.getElementById("input-load")?.value ?? 20);
+    const Lclamp = Number.isFinite(L) && L > 0 ? L : 4;
+    const qclamp = Number.isFinite(load) ? load : 0;
 
     // 显示跨度和荷载
     if (hudBeamLEl) hudBeamLEl.textContent = `${Lclamp.toFixed(1)} m`;
     if (hudBeamQEl) hudBeamQEl.textContent = `${qclamp.toFixed(0)} kN/m`;
 
     // 梁的有效显示长度：在 60~340 内按 L 缩放
-    const scale = (0.5 + 0.5 * (Lclamp / 10));
+    const scale = 1; // 几何自适应；跨度用实际数值标注，不让大跨度溢出画布。
     const half = (baseLen * scale) / 2;
     const mid = (baseX1 + baseX2) / 2;
     const x1 = mid - half;
@@ -1495,7 +1417,7 @@ function initBeamScene() {
       const ax = x1 + t * (x2 - x1);
       const ayTop = 150; // 下移，避免与文字重合
       const ayBottom = 180; // 下移，避免与文字重合
-      const amp = 20 + (qclamp / 60) * 12; // 荷载越大箭头越长
+      const amp = Math.sign(qclamp) * Math.min(55, 15 + Math.abs(qclamp) / 2);
       const arrowTop = ayBottom - amp;
 
       const line = arrows[i];
@@ -1505,14 +1427,23 @@ function initBeamScene() {
       line.setAttribute("y2", ayBottom);
 
       const head = arrowHeads[i];
-      head.setAttribute("points", `${ax},${ayBottom} ${ax - 4},${arrowTop + 6} ${ax + 4},${arrowTop + 6}`);
+      head.setAttribute("points", `${ax},${ayBottom} ${ax - 4},${ayBottom - Math.sign(qclamp)*8} ${ax + 4},${ayBottom - Math.sign(qclamp)*8}`);
+      line.style.visibility = head.style.visibility = qclamp === 0 ? 'hidden' : 'visible';
     }
 
-    // 弯矩图简单放大：荷载越大曲线越"鼓"
-    const ampM = 20 + (qclamp / 60) * 20;
-    const momentY = beamY + 40; // 弯矩图在梁下方
-    const d = `M ${x1} ${momentY} Q ${(x1 + x2) / 2} ${momentY + ampM} ${x2} ${momentY}`;
-    momentPath.setAttribute("d", d);
+    // 简支均布梁解析解；图形纵向归一化，绝不把像素高度当物理弯矩。
+    const reaction = qclamp * Lclamp / 2;
+    const maximum = qclamp * Lclamp * Lclamp / 8;
+    const momentY = beamY + 40;
+    const points = Array.from({length:41},(_,i)=>{
+      const t=i/40, x=t*Lclamp;
+      const M=reaction*x-qclamp*x*x/2;
+      return `${i?'L':'M'} ${x1+t*(x2-x1)} ${momentY+(maximum ? M/Math.abs(maximum)*65 : 0)}`;
+    });
+    momentPath.setAttribute('d',points.join(' '));
+    let results=document.getElementById('hud-beam-results');
+    if(!results){results=document.createElement('div');results.id='hud-beam-results';results.className='hud-item';svg.parentElement.querySelector('.visual-hud').append(results);}
+    results.textContent=`RA = RB = ${reaction.toFixed(2)} kN；M(0)=M(L)=0；M(L/2) = ${maximum.toFixed(2)} kN·m。正弯矩画在下侧，图高自动归一化。`;
   };
 
   // 绑定输入变化
@@ -1538,8 +1469,8 @@ function initFrictionSlopeScene() {
   const block = document.getElementById("friction-block");
 
   const updateScene = () => {
-    const alphaRaw = Number(document.getElementById("input-L")?.value || 30);
-    const muRaw = Number(document.getElementById("input-E")?.value || 0.4);
+    const alphaRaw = Number(document.getElementById("input-L")?.value ?? 30);
+    const muRaw = Number(document.getElementById("input-E")?.value ?? 0.4);
     const alpha = Math.max(0, Math.min(60, alphaRaw)); // 斜面角 0°~60°
     const mu = Math.max(0, Math.min(1.0, muRaw)); // μ 0~1 合理范围
     
@@ -1549,14 +1480,35 @@ function initFrictionSlopeScene() {
     const blockCenterY = 220;
     
     // 沿斜面的分量（平行于斜面，向下）
-    const gParallelLen = 30;
+    const gParallelLen = 60 * Math.sin(alphaRad);
     const gParallelX = blockCenterX + gParallelLen * Math.cos(alphaRad);
     const gParallelY = blockCenterY + gParallelLen * Math.sin(alphaRad);
     
     // 垂直斜面的分量（垂直于斜面，指向斜面内部）
-    const gPerpLen = 25;
+    const gPerpLen = 60 * Math.cos(alphaRad);
     const gPerpX = blockCenterX - gPerpLen * Math.sin(alphaRad);
-    const gPerpY = blockCenterY - gPerpLen * Math.cos(alphaRad);
+    const gPerpY = blockCenterY + gPerpLen * Math.cos(alphaRad);
+    // 斜面向右下倾斜；块体下边缘与斜面重合。
+    const slope = svg.querySelector('polygon');
+    const tx = Math.cos(alphaRad), ty = Math.sin(alphaRad);
+    const nx = Math.sin(alphaRad), ny = -Math.cos(alphaRad);
+    const contactX = blockCenterX - 20 * nx, contactY = blockCenterY - 20 * ny;
+    const ax = contactX - 125 * tx, ay = contactY - 125 * ty;
+    const bx = contactX + 125 * tx, by = contactY + 125 * ty;
+    slope.setAttribute('points', `${ax},${ay} ${bx},${by} ${bx},365 ${ax},365`);
+    block.innerHTML = `<rect x="-25" y="-20" width="50" height="40" rx="3" fill="#29b6f6" stroke="#ffffff" stroke-width="1.5"/>`;
+    block.setAttribute('transform', `translate(220 220) rotate(${alpha})`);
+    const forces = [...svg.children].filter(el => el.tagName.toLowerCase() === 'line' && el.getAttribute('marker-end'));
+    const ends = [[220,280], [220 + 60 * Math.cos(alphaRad) * nx,220 + 60 * Math.cos(alphaRad) * ny],
+      [220 - 60 * Math.min(Math.sin(alphaRad),mu*Math.cos(alphaRad))*tx,220 - 60 * Math.min(Math.sin(alphaRad),mu*Math.cos(alphaRad))*ty]];
+    forces.forEach((line,i)=>{if(ends[i]){line.setAttribute('x2',ends[i][0]);line.setAttribute('y2',ends[i][1]);}});
+    [...svg.children].filter(el=>el.tagName.toLowerCase()==='text').forEach(label=>{
+      const i=['G','N','Ff'].indexOf(label.textContent);
+      if(i>=0){label.setAttribute('x',ends[i][0]+8);label.setAttribute('y',ends[i][1]-6);}
+      if(label.textContent==='α'){label.setAttribute('x',ax+38);label.setAttribute('y',ay+12);}
+    });
+    const arc=svg.querySelector('path[stroke="#ffffff"]');
+    if(arc) arc.setAttribute('d',`M${ax+32},${ay} A32,32 0 0,1 ${ax+32*tx},${ay+32*ty}`);
     
     if (gParallel) {
       gParallel.setAttribute("x1", blockCenterX);
@@ -1748,8 +1700,18 @@ function initDiskCoupleScene() {
     // 切向力箭头长度：随 F 增大而变长
     const len = 30 + (Fclamp - 10) / (1000 - 10) * 40; // 30~70 像素
     const cx = 200;
-    const yTop = 80;
-    const yBottom = 200;
+    const yTop = 200 - rPx;
+    const yBottom = 200 + rPx;
+    const radiusLine = svg.querySelector('line[stroke-dasharray]');
+    if (radiusLine) radiusLine.setAttribute('y2', yTop);
+    const labels = svg.querySelectorAll('text');
+    labels.forEach(label => {
+      if (label.textContent === 'F') {
+        const top = Number(label.getAttribute('x')) > 200;
+        label.setAttribute('x', top ? cx + len + 8 : cx - len - 16);
+        label.setAttribute('y', (top ? yTop : yBottom) + 4);
+      }
+    });
     if (forceTop) {
       forceTop.setAttribute("x1", cx.toString());
       forceTop.setAttribute("y1", yTop.toString());
@@ -4661,6 +4623,40 @@ function initObliqueCollisionScene() {
   }
 }
 
+// 可验证的物理计算核心（供动画与独立测试共同使用）
+function physicsDampedDisplacement(m, k, c, t, A0 = 0.1, v0 = 0) {
+  const omega0 = Math.sqrt(k / m);
+  const zeta = c / (2 * Math.sqrt(m * k));
+  if (zeta < 1) {
+    const omegaD = omega0 * Math.sqrt(1 - zeta * zeta);
+    const B = (v0 + zeta * omega0 * A0) / omegaD;
+    return Math.exp(-zeta * omega0 * t) * (A0 * Math.cos(omegaD * t) + B * Math.sin(omegaD * t));
+  }
+  if (Math.abs(zeta - 1) < 1e-12) {
+    return (A0 + (v0 + omega0 * A0) * t) * Math.exp(-omega0 * t);
+  }
+  const s = Math.sqrt(zeta * zeta - 1);
+  const r1 = -omega0 * (zeta - s);
+  const r2 = -omega0 * (zeta + s);
+  const C1 = (v0 - r2 * A0) / (r1 - r2);
+  const C2 = A0 - C1;
+  return C1 * Math.exp(r1 * t) + C2 * Math.exp(r2 * t);
+}
+function physicsForcedAmplitude(m, k, zeta, omega, F0 = 2) {
+  const omega0 = Math.sqrt(k / m);
+  return F0 / (m * Math.hypot(omega0 * omega0 - omega * omega, 2 * zeta * omega0 * omega));
+}
+function physicsGyroPrecessionRate(I, spinOmega, torque) {
+  const angularMomentum = I * spinOmega;
+  return angularMomentum === 0 ? 0 : torque / angularMomentum;
+}
+function physicsRocketVelocity(m0, m, exhaustSpeed) {
+  return exhaustSpeed * Math.log(m0 / m);
+}
+function physicsVariableMassForce(dmDt, systemVelocity, streamVelocity, acceleration = 0, mass = 0) {
+  return mass * acceleration + (systemVelocity - streamVelocity) * dmDt;
+}
+
 // 简谐振动·单自由度模型
 function initSimpleHarmonicOscillatorScene() {
   const mass = document.getElementById("sho-mass");
@@ -4801,21 +4797,8 @@ function initDampedVibrationScene() {
     const A0 = 0.1;
     const omega0 = Math.sqrt(k / m);
     const zeta = c / (2 * Math.sqrt(m * k));
-    const omegaD = omega0 * Math.sqrt(1 - zeta * zeta);
-
-    let x;
-    if (zeta < 1) {
-      // 欠阻尼
-      x = A0 * Math.exp(-zeta * omega0 * t) * Math.cos(omegaD * t);
-    } else if (zeta === 1) {
-      // 临界阻尼
-      x = A0 * (1 + omega0 * t) * Math.exp(-omega0 * t);
-    } else {
-      // 过阻尼
-      const r1 = -zeta * omega0 + omega0 * Math.sqrt(zeta * zeta - 1);
-      const r2 = -zeta * omega0 - omega0 * Math.sqrt(zeta * zeta - 1);
-      x = A0 * (Math.exp(r1 * t) - Math.exp(r2 * t)) / 2;
-    }
+    // 统一使用满足 x(0)=A0、v(0)=0 的解析解，且正确覆盖三种阻尼状态
+    const x = physicsDampedDisplacement(m, k, c, t, A0, 0);
 
     const massX = 100 + x * 500;
     const massY = 225; // 与SVG中质量块位置一致（y=210 + 15居中）
@@ -4905,7 +4888,7 @@ function initForcedVibrationScene() {
     const r = omega / omega0; // 频率比
 
     // 振幅响应
-    const A = F0 / (m * Math.sqrt(Math.pow(omega0 * omega0 - omega * omega, 2) + Math.pow(2 * zeta * omega0 * omega, 2)));
+    const A = physicsForcedAmplitude(m, k, zeta, omega, F0);
     const phi = Math.atan2(2 * zeta * omega0 * omega, omega0 * omega0 - omega * omega);
 
     const x = A * Math.cos(omega * t - phi);
@@ -4998,7 +4981,7 @@ function initGyroscopePrecessionScene() {
     const omega = Number(document.getElementById("input-load")?.value || 10.0);
     const M = Number(document.getElementById("input-omega")?.value || 0.5);
     const L = I * omega;
-    const Omega = M / L; // 进动角速度
+    const Omega = physicsGyroPrecessionRate(I, omega, M); // 进动角速度
 
     const precessionAngle = Omega * t;
     const spinAngle = omega * t;
@@ -5169,8 +5152,10 @@ function initRocketMotionScene() {
     const m0 = Number(document.getElementById("input-L")?.value || 100.0);
     const u = Number(document.getElementById("input-load")?.value || 2000.0);
     const dotM = Number(document.getElementById("input-omega")?.value || 5.0);
+    // 质量不得降至干质量；推力段结束后速度保持末值
     const m = Math.max(10, m0 - dotM * t);
-    const v = u * Math.log(m0 / m);
+    const effectiveBurnedMass = Math.max(0, m0 - m);
+    const v = physicsRocketVelocity(m0, m0 - effectiveBurnedMass, u);
 
     const rocketY = 210 - v * 0.1; // 向上移动20px，减少上方空白
     const rocketX = 165;
@@ -8394,6 +8379,7 @@ function switchVisualByModel(modelId) {
     target.classList.add("scene-2d-active");
     // 按需初始化新添加的动画场景（避免同时运行太多动画导致卡顿）
     setTimeout(() => {
+      if (!target.classList.contains('scene-2d-active')) return;
       if (targetSceneId === "point-kinematics-coordinates" && typeof initPointKinematicsCoordinatesScene === "function" && !sceneAnimationRunning.get(targetSceneId)) {
         initPointKinematicsCoordinatesScene();
       } else if (targetSceneId === "rigid-body-translation" && typeof initRigidBodyTranslationScene === "function" && !sceneAnimationRunning.get(targetSceneId)) {
@@ -8440,6 +8426,18 @@ function switchVisualByModel(modelId) {
 
   // 切换参数区展示与文案
   applyModelParamPreset(modelId);
+  // 共享输入控件不能把上一模型的不同量纲参数带入下一模型。
+  const modelDefaults = {
+    'disk-couple': [0.2,100,200000], 'multi-force-panel':[0.9,120,200000],
+    'friction-slope':[30,100,0.4]
+  };
+  if (modelDefaults[modelId] && window.__lastParamModel !== modelId) {
+    ['input-L','input-load','input-E'].forEach((id,i)=>{
+      const input=document.getElementById(id); input.value=modelDefaults[modelId][i];
+    });
+  }
+  window.__lastParamModel = modelId;
+  ['input-L','input-load','input-E'].forEach(id=>document.getElementById(id)?.dispatchEvent(new Event('input')));
 
   // 确保 2D 模式被激活
   const mode2dButton = document.querySelector('.panel-tabs .tab-btn[data-mode="2d"]');
