@@ -3,7 +3,7 @@
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
   const {levels,units}=window.STATICS_CURRICULUM;
   const KEY='mechanics-playground-v3';
-  const scenes=['lever','support','beam','friction'];
+  const scenes=['lever','support','beam','friction','material'];
   const base=()=>({schema:3,mode:'teach',level:0,unit:0,phase:'op',scene:'lever',x:.8,F:20,theta:90,support:true,beam:{a:1,P:20},friction:{alpha:30,mu:.4},material:{E:200000,yield:250,maxStrain:.002,H:1000},completed:{},hints:0,wrong:0,slots:{}});
   let state=base();
   const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;
@@ -11,7 +11,7 @@
   function applySetup() {
     const l=levels[state.level];if(!l)return;
     state.scene=l.scene;state.x=.8;state.F=20;state.theta=90;state.support=true;
-    state.beam={a:1,P:20};state.friction={alpha:30,mu:.4};
+    state.beam={a:1,P:20};state.friction={alpha:30,mu:.4};state.material={E:200000,yield:250,maxStrain:.002,H:1000};
     const p=l.setup||{};
     if(p.material)state.material={...state.material,...p.material};
     for(const k of ['x','F','theta','support']) if(p[k]!==undefined) state[k]=p[k];
