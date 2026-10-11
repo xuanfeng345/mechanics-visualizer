@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const nodes=new Map();const node=s=>{if(!nodes.has(s))nodes.set(s,{value:s==='#scenePicker'?'lever':'',dataset:{},setAttribute(){},append(){},remove(){}});return nodes.get(s)};
+let callback;const context={window:{},document:{querySelector:node,createElement:()=>({dataset:{}})},requestAnimationFrame:f=>{callback=f;return 1},cancelAnimationFrame(){}};
+vm.createContext(context);for(const f of ['engine-browser.js','release-view.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../'+f),'utf8'),context);
+const engine=context.window.MechanicsEngine,original=engine.dynamics.rodRelease,angles=[];
+engine.dynamics.rodRelease=o=>{angles.push(o.phi);return original(o)};
+node('#releaseBtn').onclick();for(let i=0;i<50;i++)callback();
+assert.equal(angles[0],0);assert.ok(angles[angles.length-1]<-.1,'rod rotates under gravity');assert.ok(new Set(angles).size>40,'torque recomputed at evolving angle');
+assert.ok(node('#interactionNotice').textContent.includes('撤去施力'));
+assert.ok(node('#interactionNotice').textContent.includes('数值近似'));
+console.log('PASS: release animation recomputes angle-dependent gravity torque and labels independent numerical example');
