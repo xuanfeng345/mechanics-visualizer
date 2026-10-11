@@ -75,7 +75,7 @@
   let restored=false;
   try {
     const saved=JSON.parse(localStorage.getItem(KEY));
-    if(saved&&saved.schema===3){const migrated=base();migrated.mode=saved.mode||'teach';migrated.level=Math.min(saved.level||0,staticsLevels.length);migrated.unit=Math.min(saved.unit||0,staticsUnits.length-1);migrated.phase=['op','answer','passed'].includes(saved.phase)?saved.phase:'op';migrated.scene=saved.scene||'lever';migrated.x=saved.x??migrated.x;migrated.F=saved.F??migrated.F;migrated.theta=saved.theta??migrated.theta;migrated.support=saved.support??migrated.support;migrated.completed=saved.completed||{};migrated.slots=saved.slots||{};state=migrated;restored=true;notice('已迁移静力学进度；材料力学章节保持独立记录。');}
+    if(saved&&saved.schema===3){const migrated=migrateLegacyState(saved);if(!valid(migrated))throw new Error('旧存档校验失败');state=migrated;restored=true;notice('已迁移静力学进度；材料力学章节保持独立记录。');}
     else if(saved&&saved.schema===4&&valid(mergeSaved(saved))){state=mergeSaved(saved);restored=true;}
     else {
       const old=JSON.parse(localStorage.getItem('mechanics-playground-v2'));
