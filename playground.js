@@ -228,14 +228,22 @@
     state.phase='passed';save();
   }
   function render(){
+    if(mappedCurriculum!==state.curriculum){setCourseMap(courseMapFor(state.curriculum));mappedCurriculum=state.curriculum;}
     $$('.mode').forEach(b=>{b.classList.toggle('active',b.dataset.mode===state.mode);b.setAttribute('aria-pressed',String(b.dataset.mode===state.mode));});
     renderScene();renderLevels();renderCards();renderChallenge();
   }
   $('#unitSelect').onchange=e=>{state.unit=Number(e.target.value);renderLevels();save();};
-  const mapButtons={theory:$$('[data-map="theory"]'),materials:$$('[data-map="materials"]')};
-  const mapCourseIds={theory:['staticsCourseBtn','kinematicsCourseBtn','dynamicsCourseBtn','rigidCourseBtn','vibrationCourseBtn','lagrangianCourseBtn'],materials:['axialCourseBtn','torsionCourseBtn','stressTransformCourseBtn','beamMaterialCourseBtn','bucklingCourseBtn','fatigueCourseBtn']};
-  function setCourseMap(map){for(const [name,ids] of Object.entries(mapCourseIds))for(const id of ids){const b=$('#'+id);if(b)b.hidden=name!==map;}$('#theoryMapBtn').classList.toggle('active',map==='theory');$('#materialsMapBtn').classList.toggle('active',map==='materials');}
-  $('#theoryMapBtn').onclick=()=>setCourseMap('theory');$('#materialsMapBtn').onclick=()=>setCourseMap('materials');setCourseMap('theory');
+  const courseMapFor=course=>['axial','torsion','stress-transform','beam-material','buckling','fatigue'].includes(course)?'materials':'theory';
+  let mappedCurriculum=null;
+  const mapCourseIds={theory:['staticsCourseBtn','kinematicsCourseBtn','dynamicsCourseBtn','rigidCourseBtn','vibrationCourseBtn','lagrangianCourseBtn'],materials:['axialCourseBtn','torsionCourseBtn','beamMaterialCourseBtn','stressTransformCourseBtn','bucklingCourseBtn','fatigueCourseBtn']};
+  function setCourseMap(map){
+    for(const [name,ids] of Object.entries(mapCourseIds))for(const id of ids){const b=$('#'+id);if(b)b.hidden=name!==map;}
+    for(const name of ['theory','materials']){const b=$('#'+(name==='theory'?'theory':'materials')+'MapBtn');b.classList.toggle('active',map===name);b.setAttribute('aria-selected',String(map===name));b.setAttribute('role','tab');}
+    let guide=$('#courseMapGuide');if(!guide){guide=document.createElement('p');guide.id='courseMapGuide';guide.className='small';guide.setAttribute('role','status');$('.course-switch').before(guide);}
+    guide.textContent=map==='theory'?'理论力学建议路线：静力学 → 运动学 → 质点动力学 → 刚体动力学 → 振动 → 分析力学。先修：向量、三角函数；后两章还需微积分与常微分方程。':'材料力学建议路线：轴向杆 → 圆轴扭转 → 梁弯曲 → 组合应力 → 屈曲 → 疲劳。先修：受力图、平衡方程、截面几何性质。路线不锁关；通过本题不等于已掌握整章。';
+    for(const id of mapCourseIds[map])$('.course-switch').append($('#'+id));
+  }
+  $('#theoryMapBtn').onclick=()=>setCourseMap('theory');$('#materialsMapBtn').onclick=()=>setCourseMap('materials');setCourseMap(courseMapFor(state.curriculum));mappedCurriculum=state.curriculum;
   $('#staticsCourseBtn').onclick=()=>{state.curriculum='statics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学静力学，原材料章节进度保留。');};
   $('#axialCourseBtn').onclick=()=>{state.curriculum='axial';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到材料力学轴向杆，静力学进度保留。');};
   $('#kinematicsCourseBtn').onclick=()=>{state.curriculum='kinematics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学运动学，静力学与材料力学进度保留。');};
