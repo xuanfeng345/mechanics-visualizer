@@ -221,7 +221,7 @@
     const formula=l.formulaLatex||l.formula||'';const link=`<a href="index.html?concept=${encodeURIComponent(l.concept)}" target="_blank" rel="noopener">关联知识卡 ↗</a>`;
     if(state.phase==='op')body.innerHTML=`<h3>${l.title}</h3><p>${l.intro}</p><p class="small">${l.operation?'先完成画面对应的实验，再进入计算或辨析题。':'本关为观察与独立计算，无需反复调整控件。'}</p><button id="opDone" class="solid-btn">${l.operation?'检查实验 →':'进入答题 →'}</button><p id="taskFeedback" role="status"></p>${link}`;
     else if(state.phase==='passed')body.innerHTML=`<h3>✓ 本题通过</h3><p id="answerMsg">${l.solution}</p><button id="nextLesson" class="solid-btn">继续下一关 →</button><p>${link}</p>`;
-    else body.innerHTML=`<h3>${l.title}</h3><p>${l.question}</p><p class="small">${typeof l.answer==='number'?'可填小数或简单分数，保留两位小数；误差允许 ±0.01。':'按题目给定的词或顺序作答。'}</p><form id="answerForm" class="answer-row"><input id="answer" aria-label="题目答案" placeholder="${typeof l.answer==='number'?'数值 / 分数':'文字 / 数值序列'}"><button id="submit" type="button" class="solid-btn">验证答案</button></form><p class="formula-display" aria-label="本关公式">公式：${formula||'见题目解析'}</p><p id="answerMsg" role="status"></p><button id="backToOperation" class="text-btn">返回实验</button><p>${link}</p>`;
+    else body.innerHTML=`<h3>${l.title}</h3><p>${l.question}</p><p class="small">${typeof l.answer==='number'?'按题目单位填写；支持小数、简单分数和科学计数法（如2e3）。按题目要求保留精度，误差允许 ±0.01。':'按题目给定的词或顺序作答。'}</p><form id="answerForm" class="answer-row"><input id="answer" aria-label="题目答案" placeholder="${typeof l.answer==='number'?'数值 / 分数':'文字 / 数值序列'}"><button id="submit" type="button" class="solid-btn">验证答案</button></form><p class="formula-display" aria-label="本关公式">公式：${formula||'见题目解析'}</p><p id="answerMsg" role="status"></p><button id="backToOperation" class="text-btn">返回实验</button><p>${link}</p>`;
     $('#opDone')?.addEventListener('click',()=>{if(!operationOK(l)){$('#taskFeedback').textContent='尚未满足实验条件。可点下方提示获取方向，不扣分。';return;}state.phase='answer';renderChallenge();save();});
     $('#submit')?.addEventListener('click',submit);
     $('#answerForm')?.addEventListener('submit',e=>{e.preventDefault();submit();});
@@ -230,7 +230,7 @@
     $('#backToOperation')?.addEventListener('click',()=>{state.phase='op';renderChallenge();save();});
     renderHints();
   }
-  function numeric(raw){const p=raw.split('/').map(x=>x.trim());if(p.length>2||p.some(x=>!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(x)))return NaN;const n=p.length===1?Number(p[0]):Number(p[0])/Number(p[1]);return Number.isFinite(n)?n:NaN;}
+  function numeric(raw){if(typeof raw!=='string')return NaN;const p=raw.split('/').map(x=>x.trim());if(p.length>2||p.some(x=>!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$/.test(x)))return NaN;const values=p.map(Number);if(values.some(x=>!Number.isFinite(x))||(p.length===2&&values[1]===0))return NaN;const n=p.length===1?values[0]:values[0]/values[1];return Number.isFinite(n)?n:NaN;}
   const norm=s=>s.replace(/[，,；;]/g,'、').replace(/\s/g,'').toLowerCase();
   function submit(){
     const l=current(),raw=$('#answer').value.trim(),msg=$('#answerMsg');$('#nextLesson')?.remove();
