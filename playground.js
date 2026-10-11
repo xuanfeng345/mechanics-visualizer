@@ -173,6 +173,20 @@
   }
   function renderCards(){
     const entries=[['object','研究对象',state.scene==='friction'?'研究斜面上的块体。重力、法向反力与摩擦均为外力。':state.scene==='beam'?'研究整根简支梁。不要将支座反力与外加集中载荷混淆。':'先隔离研究对象，再将约束替换为正确的反力。'],['condition','适用条件',$('#explain').textContent],['balance','平衡关系',state.scene==='friction'?'静摩擦大小按需要取值；只有达到临界时才等于 μN。':'平面刚体静止：ΣFx=0，ΣFy=0，ΣM=0。'],['moment','方法选择',state.scene==='friction'?'沿斜面和法向分解，先求 N，再比较下滑分量与 μN。':'优先选能消去未知力的点取矩，但所有平衡条件仍需满足。'],['check','结果检查','检查单位、正负方向、适用条件。提示不扣分；完整讲解后建议再做独立复习。']];
+    const methods={
+      kinematics:['质点轨迹与参考系','运动学描述位置、速度和加速度，不需要先假设合力为零。','先选参考系，再对位置求时间导数或按给定运动规律计算。'],
+      'particle-dynamics':['受合外力的质点','合外力等于质量乘加速度；加速运动不能套用静力平衡。','按所求量选择牛顿第二定律、功—能定理或冲量—动量定理。'],
+      'rigid-body':['质心平动与绕轴转动','质心满足合力等于质量乘加速度；固定轴转动满足合力矩等于转动惯量乘角加速度。','转动惯量和力矩必须关于同一轴；先明确轴是否固定。'],
+      vibration:['质量—弹簧—阻尼单自由度系统','惯性、阻尼、弹性恢复力与外激励共同决定运动，不能令合外力恒为零。','写运动方程并给定初始条件；区分自由/受迫、无阻尼/有阻尼。'],
+      lagrangian:['广义坐标描述的系统','由动能减势能构造拉格朗日量，保守系统使用欧拉—拉格朗日方程。','先数自由度和约束，再写动能与势能；检查小角近似等适用条件。'],
+      'axial-bar':['轴向受力杆的截面','轴力由平衡求得，应力与伸长还需截面关系及材料本构。','在线弹性均匀杆假设下，分别检查强度与变形；统一N、mm、MPa。'],
+      torsion:['实心圆轴及受扭截面','剪应力与扭转角依赖扭矩、极惯性矩及剪切模量。','检查线弹性圆轴假设；最大剪应力取大小，扭转角保留方向。'],
+      'beam-material':['梁整体与截面','支反力、内弯矩、弯曲正应力及挠度是不同层次的量。','先整体平衡，再截面内力，再用线弹性小挠度梁模型。'],
+      'stress-transform':['平面应力微元','旋转截面改变应力分量，不改变主应力等不变量。','统一剪应力与角度正号；区分面内最大剪应力与三维最大剪应力。'],
+      buckling:['理想细长受压直杆','Euler临界力反映整体稳定性，不等于材料屈服强度。','先定边界有效长度，再检查细长、轴心受压与线弹性假设。'],
+      fatigue:['承受循环应力的构件','应力幅、平均应力与循环寿命不同于静载强度。','本模型仅用Basquin及简单Goodman修正；不能代替材料试验与设计规范。']
+    };
+    const method=methods[state.scene];if(method){entries[0][2]=method[0];entries[2][1]='建模关系';entries[2][2]=method[1];entries[3][2]=method[2];}
     $('#cardTray').innerHTML=entries.map(([k,n])=>`<button class="card ${state.slots[k]?'visited':''}" data-card="${k}">${n}</button>`).join('');
     $$('[data-card]').forEach(b=>b.onclick=()=>{state.slots[b.dataset.card]=true;$('#cardFeedback').textContent=entries.find(c=>c[0]===b.dataset.card)[2];$('#reasoningDetails').open=true;save();});
   }
@@ -202,7 +216,7 @@
   function renderChallenge(){
     const body=$('#challengeBody'),l=current();
     if(state.mode==='free'){$('#phaseText').textContent='自由探索';body.innerHTML='<h3>自由实验台</h3><p>可切换杆件、支座、梁和斜面。教学进度不会受影响。</p><button id="returnLearning" class="solid-btn">返回教学</button>';$('#returnLearning').onclick=()=>{state.mode='teach';if(!current())state.level=0;applySetup();render();save();};renderHints();return;}
-    if(!l){$('#phaseText').textContent='章节完成';body.innerHTML='<h3>静力学入门篇已走完</h3><p>辅助完成的关卡值得再做一次无提示复习。选择任一单元即可重练。</p>';renderHints();return;}
+    if(!l){$('#phaseText').textContent='章节完成';body.innerHTML='<h3>当前章节练习已走完</h3><p>完成练习不等于已掌握整章，建议再做无提示变式与延迟复习。</p><p>辅助完成的关卡值得再做一次无提示复习。选择任一单元即可重练。</p>';renderHints();return;}
     $('#phaseText').textContent=state.phase==='op'?(l.operation?'操作 → 迁移':'观察 → 辨析'):state.phase==='passed'?'本题通过':'独立作答';
     const formula=l.formulaLatex||l.formula||'';const link=`<a href="index.html?concept=${encodeURIComponent(l.concept)}" target="_blank" rel="noopener">关联知识卡 ↗</a>`;
     if(state.phase==='op')body.innerHTML=`<h3>${l.title}</h3><p>${l.intro}</p><p class="small">${l.operation?'先完成画面对应的实验，再进入计算或辨析题。':'本关为观察与独立计算，无需反复调整控件。'}</p><button id="opDone" class="solid-btn">${l.operation?'检查实验 →':'进入答题 →'}</button><p id="taskFeedback" role="status"></p>${link}`;
