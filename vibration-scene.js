@@ -2,22 +2,22 @@
   'use strict';
 
   // Free response of m*x'' + c*x' + k*x = 0 (SI units).
-  // Non-finite inputs use defaults; finite inputs are bounded for safe SVG math.
-  function number(value, fallback, min, max) {
-    var n;
-    try { n = value == null || value === '' ? fallback : Number(value); }
-    catch (_) { n = fallback; }
-    return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+  // Scene inputs follow the strict SI-domain contract of engine/vibration.js.
+  function number(value, fallback, min, max, name) {
+    if (value === undefined) return fallback;
+    if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError((name || 'value') + ' must be finite');
+    if (value < min || value > max) throw new RangeError((name || 'value') + ' outside supported range');
+    return value;
   }
 
   function calculate(params) {
     var p = params || {};
-    var m = number(p.mass, 1, 1e-6, 1e6);
-    var k = number(p.stiffness, 20, 0, 1e6);
-    var c = number(p.damping, 0.5, 0, 1e6);
-    var x0 = number(p.initialDisplacement, 0.15, -1e6, 1e6);
-    var v0 = number(p.initialVelocity, 0, -1e6, 1e6);
-    var t = number(p.time, 0, 0, 1e6);
+    var m = number(p.mass, 1, Number.MIN_VALUE, 1e6, 'mass');
+    var k = number(p.stiffness, 20, Number.MIN_VALUE, 1e6, 'stiffness');
+    var c = number(p.damping, 0.5, 0, 1e6, 'damping');
+    var x0 = number(p.initialDisplacement, 0.15, -1e6, 1e6, 'initialDisplacement');
+    var v0 = number(p.initialVelocity, 0, -1e6, 1e6, 'initialVelocity');
+    var t = number(p.time, 0, 0, 1e6, 'time');
     var omega = Math.sqrt(k / m), alpha = c / (2 * m);
     var zeta = omega > 0 ? alpha / omega : null;
     var wd = 0, x, v, regime;
