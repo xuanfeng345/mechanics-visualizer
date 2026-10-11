@@ -7,7 +7,7 @@ const engine=context.window.MechanicsEngine,original=engine.dynamics.rodRelease,
 engine.dynamics.rodRelease=o=>{angles.push(o.phi);return original(o)};
 const originalStep=engine.release.rodStep;let steps=0,lastTime=0;
 engine.release.rodStep=(s,m,dt)=>{assert.equal(dt,.002);steps++;const result=originalStep(s,m,dt);lastTime=result.time;return result;};
-node('#releaseBtn').onclick();for(let i=0;i<50;i++)callback();
+node('#releaseBtn').onclick();for(let i=0;i<=50;i++)callback(i*16);
 assert.equal(steps,400,'eight physics substeps per display update');assert.ok(Math.abs(lastTime-.8)<1e-12,'total simulation time unchanged');
 assert.equal(angles[0],0);assert.ok(angles[angles.length-1]<-.1,'rod rotates under gravity');assert.ok(new Set(angles).size>40,'torque recomputed at evolving angle');
 assert.ok(node('#interactionNotice').textContent.includes('撤去施力'));
