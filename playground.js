@@ -83,7 +83,7 @@
     }
   } catch {notice('未能读取本地进度，已安全启动新学习。');}
   if(!restored)applySetup();
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{notice('当前浏览器未能保存进度；仍可使用，关闭页面后可能无法恢复。请导出备份。');return false;}}
+  function save(){const warning=$('#storageWarning');try{localStorage.setItem(KEY,JSON.stringify(state));if(warning){warning.hidden=true;warning.textContent='';}return true;}catch{const message='当前浏览器未能保存进度；仍可使用，关闭页面后可能无法恢复。请导出备份。';if(warning){warning.textContent=message;warning.hidden=false;}notice(message);return false;}}
   function backupPayload(){return JSON.stringify({format:'mechanics-playground-backup',version:1,exportedAt:new Date().toISOString(),state},null,2);}
   function exportBackup(){const blob=new Blob([backupPayload()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='mechanics-playground-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);notice('备份已导出；请将JSON文件保存到安全位置。');}
   function migrateLegacyState(saved){const migrated=base();migrated.mode=saved.mode||'teach';migrated.level=Math.min(saved.level||0,staticsLevels.length);migrated.unit=Math.min(saved.unit||0,staticsUnits.length-1);migrated.phase=['op','answer','passed'].includes(saved.phase)?saved.phase:'op';migrated.scene=scenes.includes(saved.scene)?saved.scene:'lever';for(const k of ['x','F','theta','support'])if(saved[k]!==undefined)migrated[k]=saved[k];migrated.completed=saved.completed===undefined?{}:saved.completed;migrated.slots=saved.slots===undefined?{}:saved.slots;return migrated;}
