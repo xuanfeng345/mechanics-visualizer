@@ -8,4 +8,7 @@ for(const [method,state,model,fields,acc] of [['rodStep',{time:0,phi:0,omega:2},
 }
 assert.throws(()=>e.dynamics.rodRelease({length:Number.MAX_VALUE}));
 assert.throws(()=>e.dynamics.inclineRelease({mass:Number.MAX_VALUE}));
+for(const force of [{},{x:0},{y:0},null,[],{x:'0',y:0},{x:0,y:NaN}])assert.throws(()=>e.dynamics.rodRelease({force}));
+assert.equal(e.dynamics.rodRelease().torque,e.dynamics.rodRelease({force:{x:0,y:0}}).torque,'omitted force and explicit complete zero force agree');
+assert.equal(e.dynamics.rodRelease({force:{x:0,y:10},forceAt:2}).torque,0,'balancing applied force is preserved');
 console.log('PASS: release rejects invalid states and overflowing results; zero timestep preserves physical state');
