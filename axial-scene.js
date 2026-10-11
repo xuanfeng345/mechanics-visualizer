@@ -11,9 +11,8 @@
         if (raw === null || typeof raw === 'boolean' || (typeof raw === 'string' && !raw.trim())) {
           throw new RangeError(names[0] + ' 必须为有效数值');
         }
-        var value = Number(raw);
-        if (!Number.isFinite(value)) throw new RangeError(names[0] + ' 必须为有限数值');
-        return value;
+        if (typeof raw !== 'number' || !Number.isFinite(raw)) throw new RangeError(names[0] + ' 必须为有限数值');
+        return raw;
       }
     }
     return fallback;
