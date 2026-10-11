@@ -39,7 +39,9 @@
   let scene='',step=0,ready=false;
   function clearHighlight(){document.querySelectorAll('.formula-highlight').forEach(e=>e.classList.remove('formula-highlight'));}
   function draw(){
-    const pack=packs[scene]||packs.lever,entry=pack[step];
+    const pack=packs[scene];
+    if(!pack){clearHighlight();guide.textContent='本场景尚未提供逐步图解。请查看当前关卡公式及文字解析；此处不套用其他场景的公式。';return;}
+    const entry=pack[step];
     clearHighlight();
     guide.innerHTML='<div class="formula-steps">'+pack.map((p,i)=>`<button type="button" data-formula-step="${i}" aria-pressed="${i===step}">${i+1} · ${p[0]}</button>`).join('')+'</div><div id="equationDisplay" class="equation-display"></div><p class="formula-caption"></p><div class="formula-live"></div>';
     const out=$('#equationDisplay');
@@ -49,7 +51,7 @@
     document.querySelectorAll('[data-formula-step]').forEach(b=>b.onclick=()=>{step=Number(b.dataset.formulaStep);draw();highlight();});
     live();highlight();
   }
-  function highlight(){clearHighlight();if($('.workspace-notes').hidden)return;document.querySelectorAll(packs[scene][step][3]).forEach(e=>e.classList.add('formula-highlight'));}
+  function highlight(){clearHighlight();if(!packs[scene]||$('.workspace-notes').hidden)return;document.querySelectorAll(packs[scene][step][3]).forEach(e=>e.classList.add('formula-highlight'));}
   function live(){if(!$('.formula-live'))return;$('.formula-live').textContent='当前画面：'+(scene==='lever'?`合矩 ${$('#moment').textContent}；${$('#equilibrium').textContent}。`:$('#reactionBox').textContent);}
   function sync(){const next=$('#scenePicker').value;if(next!==scene){scene=next;step=0;draw();}else {live();highlight();}}
   new MutationObserver(sync).observe($('#reactionBox'),{childList:true,subtree:true,characterData:true});
