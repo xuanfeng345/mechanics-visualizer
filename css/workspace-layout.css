@@ -14,8 +14,10 @@
  .apparatus{min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:12px}
  .apparatus .panel-head{flex:0 0 auto;margin-bottom:4px}
  .apparatus #scene{flex:1;min-height:0;height:100%;max-height:none;width:100%}
- #alternateScene{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
- #alternateScene svg{width:100%;height:100%;max-height:none;min-height:0}
+ /* Absolute viewport sizing avoids intrinsic SVG height escaping the flex area.
+    Override scene inline height:auto; viewBox keeps the complete diagram in view. */
+ #alternateScene{flex:1;min-height:0;min-width:0;position:relative;overflow:hidden}
+ #alternateScene > svg{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;max-height:none;min-height:0}
  .readouts{flex:0 0 auto}.readouts div{padding:7px 10px}
  .controls{padding:10px 14px;max-height:270px;overflow:auto}.controls .panel-head{margin-bottom:6px;padding-bottom:4px}
  .scene-choice{display:flex;align-items:center;gap:12px;margin:0;font-size:12px}#scenePicker{margin:3px 0;padding:4px}
