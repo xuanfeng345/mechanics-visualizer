@@ -5,7 +5,10 @@ let callback;const context={window:{},document:{querySelector:node,createElement
 vm.createContext(context);for(const f of ['engine-browser.js','release-view.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../'+f),'utf8'),context);
 const engine=context.window.MechanicsEngine,original=engine.dynamics.rodRelease,angles=[];
 engine.dynamics.rodRelease=o=>{angles.push(o.phi);return original(o)};
+const originalStep=engine.release.rodStep;let steps=0,lastTime=0;
+engine.release.rodStep=(s,m,dt)=>{assert.equal(dt,.002);steps++;const result=originalStep(s,m,dt);lastTime=result.time;return result;};
 node('#releaseBtn').onclick();for(let i=0;i<50;i++)callback();
+assert.equal(steps,400,'eight physics substeps per display update');assert.ok(Math.abs(lastTime-.8)<1e-12,'total simulation time unchanged');
 assert.equal(angles[0],0);assert.ok(angles[angles.length-1]<-.1,'rod rotates under gravity');assert.ok(new Set(angles).size>40,'torque recomputed at evolving angle');
 assert.ok(node('#interactionNotice').textContent.includes('撤去施力'));
 assert.ok(node('#interactionNotice').textContent.includes('数值近似'));
