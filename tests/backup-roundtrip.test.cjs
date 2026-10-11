@@ -24,4 +24,10 @@ for(const envelope of [{format:'other',version:1,state:s},{format:'mechanics-pla
  assert.throws(()=>api.importBackupText(JSON.stringify(envelope)),/格式或版本/);
  assert.equal(JSON.stringify(api.get()),snapshot);assert.equal(api.saved(),persisted);assert.equal(api.renders(),renderCount);
 }
+for(const key of ['completed','slots'])for(const bad of [null,[],false,'corrupt']){
+ assert.throws(()=>api.importBackupText(JSON.stringify({...legacy,[key]:bad})),/校验失败/);
+ assert.equal(JSON.stringify(api.get()),snapshot);assert.equal(api.saved(),persisted);assert.equal(api.renders(),renderCount);
+}
+const missing={...legacy};delete missing.completed;delete missing.slots;api.importBackupText(JSON.stringify(missing));
+assert.equal(Object.keys(api.get().completed).length,0);assert.equal(Object.keys(api.get().slots).length,0);
 console.log('PASS: executable backup round-trip preserves parameters, free scene, progress and schema3 data; invalid imports leave state intact');
