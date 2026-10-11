@@ -84,6 +84,10 @@
   } catch {notice('未能读取本地进度，已安全启动新学习。');}
   if(!restored)applySetup();
   function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{notice('当前浏览器不允许保存进度；仍可使用，关闭页面后可能无法恢复。');}}
+  function backupPayload(){return JSON.stringify({format:'mechanics-playground-backup',version:1,exportedAt:new Date().toISOString(),state},null,2);}
+  function exportBackup(){const blob=new Blob([backupPayload()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='mechanics-playground-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);notice('备份已导出；请将JSON文件保存到安全位置。');}
+  function importBackupText(text){let payload;try{payload=JSON.parse(text);}catch{throw new Error('备份不是有效JSON');}const candidate=payload&&payload.format==='mechanics-playground-backup'?payload.state:payload;if(!candidate||candidate.schema!==4)throw new Error('仅支持schema 4操练场备份');const migrated=mergeSaved(candidate);if(!valid(migrated))throw new Error('备份校验失败，未修改当前进度');state=migrated;applySetup();save();render();notice('备份已导入；当前课程进度与卡牌记录已恢复。');}
+
   const fmt=n=>(Math.abs(n)<.005?0:n).toFixed(2);
   function values(){const a=state.theta*Math.PI/180,fx=state.F*Math.cos(a),fy=state.F*Math.sin(a);return{fx,fy,m:state.x*fy-20,rx:-fx,ry:20-fy};}
   function calcLever(){
@@ -246,6 +250,9 @@
   $$('.mode').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;if(state.mode==='teach')applySetup();render();save();});
   $('#openAll').onclick=()=>{state.mode='free';render();save();};
   $('#clearCards').onclick=()=>{state.slots={};$('#cardFeedback').textContent='阅读标记已清空。';renderCards();save();};
+  $('#backupExportBtn').onclick=exportBackup;
+  $('#backupImportBtn').onclick=()=>$('#backupFileInput').click();
+  $('#backupFileInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{importBackupText(await file.text());}catch(error){notice('导入失败：'+error.message);}e.target.value='';});
   $('#resetBtn').onclick=()=>$('#resetDialog').showModal();
   $('#resetDialog').addEventListener('close',()=>{if($('#resetDialog').returnValue==='reset'){state=base();applySetup();render();save();notice('扩展课程进度已重置；原三关样板记录未删除。');}});
   const handle=$('#pointHandle');let pointer=null;
