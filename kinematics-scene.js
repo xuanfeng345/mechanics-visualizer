@@ -2,13 +2,14 @@
 (function (root) {
   'use strict';
   var NS = 'http://www.w3.org/2000/svg';
-  function finite(v, fallback) { var n = Number(v); return Number.isFinite(n) ? n : fallback; }
+  function finite(v, fallback, name) { if (v === undefined) return fallback; if (typeof v !== 'number' || !Number.isFinite(v)) throw new TypeError((name || 'value') + ' must be finite'); return v; }
   function paramsOf(p) {
     p = p || {};
-    return { mode: p.mode === 'circular' || p.mode === 'relative' ? p.mode : 'projectile',
-      vx: finite(p.vx, 12), vy: finite(p.vy, 18), g: Math.max(0, finite(p.g, 9.81)),
-      t: Math.max(0, finite(p.t, 1.5)), radius: Math.max(1e-9, Math.abs(finite(p.radius, 45))),
-      omega: finite(p.omega, 0.8) };
+    var mode = p.mode === undefined ? 'projectile' : p.mode;
+    if (!['projectile','circular','relative'].includes(mode)) throw new RangeError('mode must be projectile, circular or relative');
+    var q = { mode: mode, vx: finite(p.vx, 12, 'vx'), vy: finite(p.vy, 18, 'vy'), g: finite(p.g, 9.81, 'g'), t: finite(p.t, 1.5, 't'), radius: finite(p.radius, 45, 'radius'), omega: finite(p.omega, 0.8, 'omega') };
+    if (q.g < 0 || q.t < 0 || q.radius <= 0) throw new RangeError('g and t must be nonnegative; radius must be positive');
+    return q;
   }
   function projectile(q, time) { return { x: q.vx * time, y: q.vy * time - .5 * q.g * time * time }; }
   function circular(q, time) { var a = q.omega * time; return { x: q.radius * Math.cos(a), y: q.radius * Math.sin(a) }; }
