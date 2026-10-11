@@ -103,7 +103,7 @@
     }).join(' ');
     var labels = { free: '无刚度自由运动', critical: '临界阻尼', undamped: '无阻尼', underdamped: '欠阻尼', overdamped: '过阻尼' };
     host.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="弹簧质块自由振动、位移时间波形及能量读数" class="vibration-scene">' +
-      '<rect width="760" height="330" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>' +
+      '' +
       '<g font-family="system-ui,sans-serif" fill="#0f172a"><text x="24" y="30" font-size="18" font-weight="600">弹簧质块 · 自由振动</text>' +
       '<text x="24" y="53" font-size="12">' + labels[r.regime] + ' · m=' + fmt(r.mass) + ' kg · k=' + fmt(r.stiffness) + ' N/m · c=' + fmt(r.damping) + ' N·s/m</text>' +
       '<path d="M50 106V192M36 115L50 106M36 134L50 125M36 153L50 144M36 172L50 163M36 191L50 182M50 190H312" stroke="#64748b" fill="none"/>' +

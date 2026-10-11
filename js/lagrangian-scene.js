@@ -65,7 +65,7 @@
     }
     var svg = '<svg xmlns="' + NS + '" viewBox="0 0 760 330" role="img" aria-label="拉格朗日力学：广义坐标、势能曲线、速度与能量" style="display:block;width:100%;height:auto;font-family:system-ui,sans-serif">' +
       '<defs><marker id="lag-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L8 5L1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>' +
-      '<rect x=".5" y=".5" width="759" height="329" rx="16" fill="#f8fafc" stroke="#dbe5e7"/>' +
+      '' +
       '<text x="24" y="30" font-size="18" font-weight="700" fill="#17324d">拉格朗日力学 / LAGRANGIAN SCENE</text>' +
       '<text x="24" y="51" font-size="12" fill="#64748b">一维简谐系统　m=' + esc(fmt(r.mass)) + ' kg　k=' + esc(fmt(r.stiffness)) + ' N/m　t=' + esc(fmt(r.time)) + ' s</text>' +
       '<path d="M' + left + ' ' + axisY + 'H' + right + '" stroke="#9aaeb5"/><path d="M' + zeroX.toFixed(1) + ' 62V235" stroke="#b7c7cb" stroke-dasharray="4 4"/>' +

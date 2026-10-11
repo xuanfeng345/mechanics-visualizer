@@ -81,7 +81,7 @@
     var r;
     var id = 'axial-scene-' + (++serial);
     var svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 760 510');
+    svg.setAttribute('viewBox', '0 0 1100 330');
     svg.setAttribute('width', '100%');
     svg.setAttribute('role', 'img');
     svg.setAttribute('aria-labelledby', id + '-title ' + id + '-desc');
@@ -110,7 +110,7 @@
     }
     parts.push('<title id="' + id + '-title">轴向杆 · ' + esc(status) + '</title><desc id="' + id + '-desc">轴向力 ' + fmt(r.force) + ' N，应力 ' + fmt(r.stress) + ' MPa，应变 ' + fmt(r.strain, 6) + '，伸长 ' + fmt(r.elongation) + ' mm。形变为示意，不按比例。超过屈服后线弹性结果仅作外推。</desc>');
     parts.push('<defs><marker id="' + id + '-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#475569" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></marker><pattern id="' + id + '-hatch" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M-1 1 L1 -1 M0 7 L7 0 M6 8 L8 6" stroke="#cbd5e1" stroke-width="1"/></pattern><linearGradient id="' + id + '-scale"><stop stop-color="#2563eb"/><stop offset="33%" stop-color="#0ea5a4"/><stop offset="67%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs>');
-    parts.push('<rect x="0.5" y="0.5" width="759" height="509" rx="18" fill="#eeece7" stroke="#303536"/><rect x="19" y="67" width="527" height="202" rx="12" fill="white" stroke="#e2e8f0"/>');
+    // Draw directly on the shared apparatus surface, without nested cards.
     text(25, 31, '轴向杆 / AXIAL BAR', 17, '#0f172a', 'font-weight="700"');
     text(25, 51, '单轴 · 等截面 · 小变形线弹性', 11);
     text(735, 31, status, 13, stateColor, 'text-anchor="end" font-weight="600"');
@@ -154,8 +154,8 @@
     text(735, 290, r.yielded ? '已屈服：数值为线弹性外推，非塑性预测' : 'σ = F/A    ε = σ/E    ΔL = εL', 11, r.yielded ? '#b91c1c' : '#475569', 'text-anchor="end"');
     text(735, 308, '均匀应力/应变；色阶按屈服阈值归一化', 10, '#64748b', 'text-anchor="end"');
     // Signed constitutive plot: fixed symmetric elastic domain, no invented plastic law.
-    parts.push('<rect x="19" y="327" width="722" height="163" rx="12" fill="white" stroke="#d4d8d4"/>');
-    text(36, 350, '材料响应 · 应力—应变', 14, '#303536', 'font-weight="700"');
+    parts.push('<g transform="translate(720 -310)">');
+    text(55, 350, '材料响应 · 应力—应变', 14, '#303536', 'font-weight="700"');
     var cx = 209, cy = 415, dx = 133, dy = 48;
     line(55, cy, 373, cy, '#6d7472');
     line(cx, 360, cx, 476, '#6d7472');
@@ -168,11 +168,12 @@
     line(px, cy, px, py, tint, 'stroke-dasharray="3 3"');
     line(cx, py, px, py, tint, 'stroke-dasharray="3 3"');
     parts.push('<circle data-role="constitutive-point" cx="' + px + '" cy="' + py + '" r="5" fill="' + tint + '" stroke="#303536"/>');
-    text(403, 374, '改变 F：沿同一条直线移动', 13, '#303536');
-    text(403, 398, '改变 A：同一轴力下，应力随之改变', 12);
-    text(403, 422, '直线斜率 E；图域为 ±屈服应变 / 应力', 11);
-    text(403, 446, Math.abs(signedRatio) > 1 ? '超出图域：点停在边界，不绘制塑性曲线' : '圆点对应当前 σ 和 ε，虚线为坐标投影', 11, stateColor);
-    text(403, 470, '杆件形变仅作放大示意；数值以读数为准', 11);
+    text(55, 514, '改变 F：沿同一条直线移动', 13, '#303536');
+    text(55, 538, '改变 A：同一轴力下，应力随之改变', 12);
+    text(55, 562, '直线斜率 E；图域为 ±屈服应变 / 应力', 11);
+    text(55, 586, Math.abs(signedRatio) > 1 ? '超出图域：点停在边界，不绘制塑性曲线' : '圆点对应当前 σ 和 ε，虚线为坐标投影', 11, stateColor);
+    text(55, 610, '杆件形变仅作放大示意；数值以读数为准', 11);
+    parts.push('</g>');
     svg.innerHTML = parts.join('');
     host.replaceChildren(svg);
     return r;

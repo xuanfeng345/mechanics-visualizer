@@ -52,7 +52,7 @@
     var mount = target && typeof target === 'object' && 'innerHTML' in target;
     var v = calculate(mount ? parameters : (parameters || target));
     var out = [];
-    var ink = '#dce9ff', muted = '#8fa6c4', blue = '#69b7ff', cyan = '#53dfc3', amber = '#ffca70';
+    var ink = '#17324d', muted = '#64748b', blue = '#2563a6', cyan = '#0f766e', amber = '#b45309';
     function text(x, y, value, fill, size, anchor) {
       out.push('<text x="' + x + '" y="' + y + '" fill="' + (fill || ink) + '" font-size="' + (size || 11) + '" text-anchor="' + (anchor || 'start') + '">' + value + '</text>');
     }
@@ -67,15 +67,15 @@
     }
     out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" width="100%" role="img" aria-label="平面应力变换：应力元、旋转面、Mohr圆与应力读数" style="display:block;font-family:system-ui,-apple-system,Segoe UI,sans-serif">');
     out.push('<title>平面应力变换 / Plane stress transformation</title><desc>角度为逆时针法线转角。Mohr圆剪应力向上为正；空间转角θ对应圆上顺时针2θ。最大剪应力读数为面内值，另列含零面外主应力的绝对最大值。</desc>');
-    out.push('<rect width="760" height="330" rx="16" fill="#0b1424"/>');
+
     text(20, 27, '平面应力变换', ink, 16);
     text(740, 26, 'θ = ' + fmt(v.angle) + '° · 拉应力为正 · 单位同输入', muted, 11, 'end');
     [12, 254, 496].forEach(function (x) {
-      out.push('<rect x="' + x + '" y="42" width="236" height="204" rx="10" fill="#111f33" stroke="#21334c"/>');
+
     });
     text(25, 63, '01  原始应力元', blue, 12);
     var cx = 130, cy = 143, h = 30;
-    out.push('<rect x="100" y="113" width="60" height="60" rx="2" fill="#203d5b" stroke="' + blue + '" stroke-width="2"/>');
+    out.push('<rect x="100" y="113" width="60" height="60" rx="2" fill="#e8f1fb" stroke="' + blue + '" stroke-width="2"/>');
     var scale = Math.max(Math.abs(v.sigmaX), Math.abs(v.sigmaY), Math.abs(v.tauXY), 1);
     function normal(faceX, faceY, dx, dy, stress) {
       if (stress === 0) return;
@@ -101,8 +101,8 @@
     text(267, 63, '02  旋转面与牵引分量', cyan, 12);
     var rx = 372, ry = 139, a = (v.angle % 360) * Math.PI / 180;
     var nx = Math.cos(a), ny = -Math.sin(a), tx = -Math.sin(a), ty = -Math.cos(a);
-    out.push('<circle cx="372" cy="139" r="47" fill="none" stroke="#2b405b" stroke-dasharray="3 4"/>');
-    line(rx - 57, ry, rx + 65, ry, '#354b66', 1, '3 3');
+    out.push('<circle cx="372" cy="139" r="47" fill="none" stroke="#cbd5e1" stroke-dasharray="3 4"/>');
+    line(rx - 57, ry, rx + 65, ry, '#94a3b8', 1, '3 3');
     line(rx - 40 * tx, ry - 40 * ty, rx + 40 * tx, ry + 40 * ty, cyan, 4);
     arrow(rx, ry, rx + 55 * nx, ry + 55 * ny, cyan);
     text(rx + 65 * nx, ry + 65 * ny + 4, 'n', cyan, 12, 'middle');
@@ -120,8 +120,8 @@
     // One common scale for both axes preserves the circular locus, even for hydrostatic stress.
     k = Math.min(k, v.radius > 0 ? cr / v.radius : k);
     var origin = ccx - v.meanStress * k;
-    line(507, ccy, 733, ccy, '#43556e', 1);
-    line(origin, 78, origin, 202, '#43556e', 1);
+    line(507, ccy, 733, ccy, '#94a3b8', 1);
+    line(origin, 78, origin, 202, '#94a3b8', 1);
     text(735, 137, 'σ', muted, 11); text(origin + 4, 83, 'τ', muted, 11);
     out.push('<circle cx="' + ccx + '" cy="' + ccy + '" r="' + (v.radius * k) + '" fill="#ffca70" fill-opacity="0.04" stroke="' + amber + '" stroke-width="2"/>');
     function dot(x, y, color, r) { out.push('<circle cx="' + x + '" cy="' + y + '" r="' + (r || 3.5) + '" fill="' + color + '"/>'); }
@@ -132,7 +132,7 @@
     dot(ccx, ccy, muted, 2.5); dot(ox, oy, blue); dot(px, py, cyan, 4);
     text(509, 218, 'C = ' + fmt(v.meanStress) + '   R = ' + fmt(v.radius), amber, 11);
     text(509, 235, '蓝：原始面  绿：旋转面 · 圆上 −2θ', muted, 10);
-    out.push('<rect x="12" y="255" width="736" height="63" rx="10" fill="#17263a"/>');
+
     var readings = [
       ['主应力 σ1 / σ2（面内）', fmt(v.sigma1) + ' / ' + fmt(v.sigma2), blue],
       ['最大剪应力 τmax（面内）', fmt(v.maxShear), amber],
@@ -141,7 +141,7 @@
     ];
     readings.forEach(function (entry, i) {
       var x = 25 + i * 184;
-      if (i) line(x - 12, 266, x - 12, 306, '#304058', 1);
+      if (i) line(x - 12, 266, x - 12, 306, '#cbd5e1', 1);
       text(x, 275, entry[0], muted, 10);
       text(x, 299, entry[1], entry[2], 16);
     });

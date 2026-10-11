@@ -59,7 +59,7 @@
     function line(x1,y1,x2,y2,stroke,extra) { parts.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + (stroke || '#64748b') + '" stroke-width="1.5" ' + (extra || '') + '/>'); }
     parts.push('<title id="' + id + '-title">圆轴扭转 · 剪应力分布</title><desc id="' + id + '-desc">扭矩 ' + fmt(r.torque) + ' N·m，最大剪应力 ' + fmt(r.maxShearStress) + ' Pa，扭转角 ' + fmt(r.angle) + ' rad。</desc>');
     parts.push('<defs><marker id="' + id + '-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L8 5L1 9" fill="none" stroke="#db6b32" stroke-width="1.5"/></marker><linearGradient id="' + id + '-stress" x1="0" x2="1"><stop stop-color="#2563eb"/><stop offset=".55" stop-color="#f59e0b"/><stop offset="1" stop-color="#dc2626"/></linearGradient></defs>');
-    parts.push('<rect width="760" height="330" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>');
+    
     text(24,31,'圆轴扭转 / TORSION',18,'#0f172a','font-weight="700"'); text(24,52,'实心圆截面 · 线弹性 · Saint-Venant 扭转',11); text(736,31,r.torque === 0 ? '无扭矩' : (r.torque > 0 ? '正向扭转' : '反向扭转'),13,tint,'text-anchor="end" font-weight="600"');
     // Shaft and torque arrows
     parts.push('<rect x="65" y="112" width="405" height="72" rx="36" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/><ellipse cx="65" cy="148" rx="18" ry="36" fill="#94a3b8" stroke="#64748b"/><ellipse cx="470" cy="148" rx="18" ry="36" fill="#e2e8f0" stroke="#64748b"/>');
