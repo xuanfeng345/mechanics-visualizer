@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+let observer,ready;const calls=[],queue=[];
+const formula={dataset:{},textContent:'公式：T=\\frac12mv^2',replaceChildren(x){this.child=x},setAttribute(){}};
+const bad={...formula,dataset:{},textContent:'公式：BAD'};
+const text=data=>({data,parentElement:{closest:()=>false},replaceWith(f){this.result=f;this.data=''}});
+const hint=text('方法：\\(M=I\\alpha\\)，再代入。'),plain=text('检查质量和单位。');
+const roots={challengeBody:{texts:[]},hintContent:{texts:[hint,plain]}};
+const c={window:{MathJax:{tex2svg(tex,opts){calls.push({tex,opts});if(tex==='BAD')throw Error('invalid TeX');return {svg:tex}},startup:{promise:{then(fn){ready=fn}}}}},document:{querySelectorAll:()=>[formula,bad],getElementById:id=>roots[id],createTreeWalker(root){let i=0;return {nextNode(){this.currentNode=root.texts[i++];return !!this.currentNode}}},createDocumentFragment:()=>({parts:[],append(x){this.parts.push(x)}})},NodeFilter:{SHOW_TEXT:4},MutationObserver:class{constructor(fn){observer=fn}observe(){}},queueMicrotask:f=>queue.push(f)};
+vm.createContext(c);vm.runInContext(fs.readFileSync(path.join(__dirname,'../lesson-math.js'),'utf8'),c);
+ready();while(queue.length)queue.shift()();
+assert.equal(formula.child.svg,'T=\\frac12mv^2');assert.equal(formula.dataset.mathRendered,'true');assert.equal(bad.dataset.mathRendered,'error');assert.ok(hint.result.parts.some(p=>p.svg==='M=I\\alpha'));assert.equal(plain.result,undefined);
+const count=calls.length;observer();observer();assert.equal(queue.length,1,'batch changes');while(queue.length)queue.shift()();assert.equal(calls.length,count,'no rerender or failed-formula retry loop');
+console.log('PASS: dynamic formula and hint conversion, prose preservation, batching and bounded failure handling');

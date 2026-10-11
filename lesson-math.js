@@ -7,7 +7,7 @@
       if(el.dataset.mathRendered)return;
       const tex=el.textContent.replace(/^公式：/,'');
       if(tex==='见题目解析')return;
-      try{const svg=mj.tex2svg(tex,{display:true});el.replaceChildren(svg);el.dataset.mathRendered='true';el.setAttribute('aria-label','本关公式：'+tex);}catch{el.textContent='公式排版失败，请参考本题文字解析。';}
+      try{const svg=mj.tex2svg(tex,{display:true});el.replaceChildren(svg);el.dataset.mathRendered='true';el.setAttribute('aria-label','本关公式：'+tex);}catch{el.dataset.mathRendered='error';el.textContent='公式排版失败，请参考本题文字解析。';el.setAttribute('aria-label','公式排版失败');}
     });
     // Explicit math delimiters in hints/solutions are typeset without interpreting prose.
     for(const id of roots){const root=document.getElementById(id);if(!root)continue;
