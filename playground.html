@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>力学实验场 · 机构桌游</title>
+  <title>鍔涘瀹為獙鍦?路 鏈烘瀯妗屾父</title>
   <link rel="stylesheet" href="playground.css">
   <link rel="stylesheet" href="workspace-layout.css?v=1">
 </head>
@@ -11,26 +11,26 @@
   <header class="topbar">
     <div>
       <span class="eyebrow">MECHANICS LAB / 01</span>
-      <h1>力学实验场</h1>
+      <h1>鍔涘瀹為獙鍦?/h1>
     </div>
     <nav>
-      <a href="index.html">旧站入口</a>
-      <a href="index.html?concept=force-couple">知识卡：力与力偶</a>
-      <button id="backupExportBtn" class="text-btn" type="button">导出备份</button><button id="backupImportBtn" class="text-btn" type="button">导入备份</button><input id="backupFileInput" type="file" accept="application/json,.json" hidden><button id="resetBtn" class="text-btn">重置进度</button>
+      <a href="index.html">鏃х珯鍏ュ彛</a>
+      <a href="index.html?concept=force-couple">鐭ヨ瘑鍗★細鍔涗笌鍔涘伓</a>
+      <button id="backupExportBtn" class="text-btn" type="button">瀵煎嚭澶囦唤</button><button id="backupImportBtn" class="text-btn" type="button">瀵煎叆澶囦唤</button><input id="backupFileInput" type="file" accept="application/json,.json" hidden><button id="resetBtn" class="text-btn">閲嶇疆杩涘害</button>
     </nav>
   </header>
 
   <main>
     <section class="intro">
       <div>
-        <p class="kicker">平面装置 · 教学闯关 / 自由实验</p>
-        <h2>先观察，再做出判断。</h2>
-        <p>把作用点、方向与支座当作真实的工程条件。静力不平衡时，系统不会“自动平衡”或播放假动画。</p>
+        <p class="kicker">骞抽潰瑁呯疆 路 鏁欏闂叧 / 鑷敱瀹為獙</p>
+        <h2>鍏堣瀵燂紝鍐嶅仛鍑哄垽鏂€?/h2>
+        <p>鎶婁綔鐢ㄧ偣銆佹柟鍚戜笌鏀骇褰撲綔鐪熷疄鐨勫伐绋嬫潯浠躲€傞潤鍔涗笉骞宠　鏃讹紝绯荤粺涓嶄細鈥滆嚜鍔ㄥ钩琛♀€濇垨鎾斁鍋囧姩鐢汇€?/p>
       </div>
       <div class="intro-actions">
-        <div class="mode-switch" aria-label="实验模式">
-          <button data-mode="teach" class="mode active">教学模式</button>
-          <button data-mode="free" class="mode">自由模式</button>
+        <div class="mode-switch" aria-label="瀹為獙妯″紡">
+          <button data-mode="teach" class="mode active">鏁欏妯″紡</button>
+          <button data-mode="free" class="mode">鑷敱妯″紡</button>
         </div>
         <div id="interactionNotice" role="status" aria-live="polite"></div>
         <p id="storageWarning" role="alert" hidden></p>
@@ -41,113 +41,114 @@
       <div class="lab-column">
         <div class="panel apparatus">
           <div class="panel-head">
-            <span>01 / 平面装置</span>
-            <span id="statusTag" class="tag">静止分析</span>
+            <span>01 / 骞抽潰瑁呯疆</span>
+            <span id="statusTag" class="tag">闈欐鍒嗘瀽</span>
           </div>
-          <svg id="scene" viewBox="0 0 760 330" role="img" aria-label="水平杆与铰支座示意图">
+          <svg id="scene" viewBox="0 0 760 330" role="img" aria-label="姘村钩鏉嗕笌閾版敮搴хず鎰忓浘">
             <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="currentColor" stroke-width="1.3"/></marker></defs>
             <line x1="70" y1="286" x2="690" y2="286" class="ground"/><path d="M100 214 L70 270 L130 270 Z" class="support"/><circle cx="100" cy="214" r="10" class="hinge"/>
             <line id="beam" x1="100" y1="214" x2="680" y2="214" class="beam"/><line x1="100" y1="130" x2="680" y2="130" class="dimline"/><line x1="100" y1="124" x2="100" y2="136" class="dimtick"/><line x1="680" y1="124" x2="680" y2="136" class="dimtick"/><text x="384" y="120" text-anchor="middle">L = 2 m</text>
             <g id="weightForce"><line x1="390" y1="214" x2="390" y2="258" class="force weight" marker-end="url(#arrow)"/><text x="402" y="256">W = 20 N</text></g>
-            <g id="appliedForce"><line id="forceLine" x1="450" y1="214" x2="510" y2="166" class="force applied" marker-end="url(#arrow)"/><circle id="pointHandle" cx="450" cy="214" r="8" class="handle" tabindex="0"/><text id="forceLabel" x="520" y="160" title="外加载荷">F</text><text id="xLabel" x="450" y="205" text-anchor="middle">x</text></g>
+            <g id="appliedForce"><line id="forceLine" x1="450" y1="214" x2="510" y2="166" class="force applied" marker-end="url(#arrow)"/><circle id="pointHandle" cx="450" cy="214" r="8" class="handle" tabindex="0"/><text id="forceLabel" x="520" y="160" title="澶栧姞杞借嵎">F</text><text id="xLabel" x="450" y="205" text-anchor="middle">x</text></g>
             <g id="reaction"><line id="ryLine" x1="100" y1="214" x2="100" y2="174" class="force reaction" marker-end="url(#arrow)"/><line id="rxLine" x1="100" y1="214" x2="140" y2="214" class="force reaction" marker-end="url(#arrow)"/><text id="ryText" x="112" y="177">R<tspan baseline-shift="sub">y</tspan></text><text id="rxText" x="140" y="207">R<tspan baseline-shift="sub">x</tspan></text></g>
-            <text x="100" y="308" text-anchor="middle">铰 A</text><text x="680" y="308" text-anchor="middle">端点 B</text>
+            <text x="100" y="308" text-anchor="middle">閾?A</text><text x="680" y="308" text-anchor="middle">绔偣 B</text>
           </svg>
           <div id="alternateScene" hidden></div>
           <div class="readouts">
-            <div><span title="不含支座反力">外载 ΣFx</span><strong id="sumFx">0.0 N</strong></div>
-            <div><span title="不含支座反力">外载 ΣFy</span><strong id="sumFy">0.0 N</strong></div>
-            <div><span>ΣM<sub>A</sub></span><strong id="moment">0.0 N·m</strong></div>
-            <div><span>判定</span><strong id="equilibrium">未平衡</strong></div>
+            <div><span title="涓嶅惈鏀骇鍙嶅姏">澶栬浇 危Fx</span><strong id="sumFx">0.0 N</strong></div>
+            <div><span title="涓嶅惈鏀骇鍙嶅姏">澶栬浇 危Fy</span><strong id="sumFy">0.0 N</strong></div>
+            <div><span>危M<sub>A</sub></span><strong id="moment">0.0 N路m</strong></div>
+            <div><span>鍒ゅ畾</span><strong id="equilibrium">鏈钩琛?/strong></div>
           </div>
         </div>
 
         <div class="panel controls">
           <div class="panel-head">
-            <span>02 / 器件台</span>
-            <div class="motion-actions"><button id="releaseBtn" type="button" class="outline-btn">释放观察</button><button id="pauseBtn" type="button" class="text-btn" disabled>暂停</button><button id="resetMotionBtn" type="button" class="text-btn" disabled>复位</button></div>
-            <button id="openAll" class="outline-btn hidden">自由探索 · 全部可用</button>
+            <span>02 / 鍣ㄤ欢鍙?/span>
+            <div class="motion-actions"><button id="releaseBtn" type="button" class="outline-btn">閲婃斁瑙傚療</button><button id="pauseBtn" type="button" class="text-btn" disabled>鏆傚仠</button><button id="resetMotionBtn" type="button" class="text-btn" disabled>澶嶄綅</button></div>
+            <button id="openAll" class="outline-btn hidden">鑷敱鎺㈢储 路 鍏ㄩ儴鍙敤</button>
           </div>
-          <label class="scene-choice">自由实验器件 <select id="scenePicker"><option value="lever">杆件与力矩</option><option value="support">约束与反力</option><option value="beam">简支梁</option><option value="friction">斜面静摩擦</option><option value="material">材料应力—应变</option><option value="axial-bar">轴向杆</option><option value="kinematics">运动学</option><option value="particle-dynamics">质点动力学</option><option value="rigid-body">刚体动力学</option><option value="vibration">单自由度振动</option><option value="lagrangian">拉格朗日谐振子</option><option value="torsion">圆轴扭转</option><option value="stress-transform">平面组合应力</option><option value="beam-material">梁弯曲</option><option value="buckling">Euler屈曲</option><option value="fatigue">疲劳S—N</option></select></label>
+          <label class="scene-choice">鑷敱瀹為獙鍣ㄤ欢 <select id="scenePicker"><option value="lever">鏉嗕欢涓庡姏鐭?/option><option value="support">绾︽潫涓庡弽鍔?/option><option value="beam">绠€鏀</option><option value="friction">鏂滈潰闈欐懇鎿?/option><option value="material">鏉愭枡搴斿姏鈥斿簲鍙?/option><option value="axial-bar">杞村悜鏉?/option><option value="kinematics">杩愬姩瀛?/option><option value="particle-dynamics">璐ㄧ偣鍔ㄥ姏瀛?/option><option value="rigid-body">鍒氫綋鍔ㄥ姏瀛?/option><option value="vibration">鍗曡嚜鐢卞害鎸姩</option><option value="lagrangian">鎷夋牸鏈楁棩璋愭尟瀛?/option><option value="torsion">鍦嗚酱鎵浆</option><option value="stress-transform">骞抽潰缁勫悎搴斿姏</option><option value="beam-material">姊佸集鏇?/option><option value="buckling">Euler灞堟洸</option><option value="fatigue">鐤插姵S鈥擭</option></select></label>
           <div id="alternateControls" hidden></div>
           <div class="control-grid">
-            <label class="support-control"><input id="supportToggle" type="checkbox" checked> 有铰支座（关闭后要求全平衡）</label>
-            <div id="unlockList" class="unlock-list">已解锁工具：作用点 x</div>
-            <label>作用点 x <output id="xOut">1.00 m</output><input id="xRange" type="range" min="0.2" max="2" step="0.01" value="1"></label>
-            <label>力 F <output id="fOut">20 N</output><input id="fRange" type="range" min="0" max="80" step="0.01" value="20"><input id="fNumber" aria-label="精确输入力 F，单位牛顿" type="number" min="0" max="80" step="0.01" value="20" style="width:100%;padding:6px;border:1px solid #d4d8d4;border-radius:4px"></label>
-            <label>向上倾角 θ <output id="thetaOut">90°</output><input id="thetaRange" type="range" min="0" max="180" step="1" value="90"></label>
+            <label class="support-control"><input id="supportToggle" type="checkbox" checked> 鏈夐摪鏀骇锛堝叧闂悗瑕佹眰鍏ㄥ钩琛★級</label>
+            <div id="unlockList" class="unlock-list">宸茶В閿佸伐鍏凤細浣滅敤鐐?x</div>
+            <label>浣滅敤鐐?x <output id="xOut">1.00 m</output><input id="xRange" type="range" min="0.2" max="2" step="0.01" value="1"></label>
+            <label>鍔?F <output id="fOut">20 N</output><input id="fRange" type="range" min="0" max="80" step="0.01" value="20"><input id="fNumber" aria-label="绮剧‘杈撳叆鍔?F锛屽崟浣嶇墰椤? type="number" min="0" max="80" step="0.01" value="20" style="width:100%;padding:6px;border:1px solid #d4d8d4;border-radius:4px"></label>
+            <label>鍚戜笂鍊捐 胃 <output id="thetaOut">90掳</output><input id="thetaRange" type="range" min="0" max="180" step="1" value="90"></label>
           </div>
-          <p id="lockHint" class="lock-hint">器件按任务逐步解锁；拖动圆点或滑块可调整参数。</p>
-          <p class="hint">可拖拽画布上的圆点改变 x；滑块改变 F 与 θ。向上为正，角度从杆的正向计。</p>
+          <p id="lockHint" class="lock-hint">鍣ㄤ欢鎸変换鍔￠€愭瑙ｉ攣锛涙嫋鍔ㄥ渾鐐规垨婊戝潡鍙皟鏁村弬鏁般€?/p>
+          <p class="hint">鍙嫋鎷界敾甯冧笂鐨勫渾鐐规敼鍙?x锛涙粦鍧楁敼鍙?F 涓?胃銆傚悜涓婁负姝ｏ紝瑙掑害浠庢潌鐨勬鍚戣銆?/p>
         </div>
 
         <details class="panel explanation" id="formulaDetails">
-          <summary class="panel-head"><span>03 / 公式检查</span><span class="formula-chip">只计算，不伪造运动</span></summary>
-          <p id="explain">取 A 点矩：ΣM<sub>A</sub> = xFsinθ − WL/2。若不为零，杆处于不平衡静力状态，不能宣称静止。</p>
-          <div class="reaction-box" id="reactionBox">平衡时支反力：R<sub>x</sub> = −ΣF<sub>x,外</sub>，R<sub>y</sub> = −ΣF<sub>y,外</sub>。</div>
+          <summary class="panel-head"><span>03 / 鍏紡妫€鏌?/span><span class="formula-chip">鍙绠楋紝涓嶄吉閫犺繍鍔?/span></summary>
+          <p id="explain">鍙?A 鐐圭煩锛毼<sub>A</sub> = xFsin胃 鈭?WL/2銆傝嫢涓嶄负闆讹紝鏉嗗浜庝笉骞宠　闈欏姏鐘舵€侊紝涓嶈兘瀹ｇО闈欐銆?/p>
+          <div class="reaction-box" id="reactionBox">骞宠　鏃舵敮鍙嶅姏锛歊<sub>x</sub> = 鈭捨<sub>x,澶?/sub>锛孯<sub>y</sub> = 鈭捨<sub>y,澶?/sub>銆?/div>
         </details>
       </div>
 
       <aside class="side-column">
-        <nav class="workspace-tabs" aria-label="学习面板"><button type="button" data-pane="task" aria-pressed="true">当前任务</button><button type="button" data-pane="map" aria-pressed="false">章节地图</button><button type="button" data-pane="notes" aria-pressed="false">知识与公式</button></nav>
+        <nav class="workspace-tabs" aria-label="瀛︿範闈㈡澘"><button type="button" data-pane="task" aria-pressed="true">褰撳墠浠诲姟</button><button type="button" data-pane="map" aria-pressed="false">绔犺妭鍦板浘</button><button type="button" data-pane="notes" aria-pressed="false">鐭ヨ瘑涓庡叕寮?/button></nav>
         <section class="panel challenge" id="challenge">
-          <div class="panel-head"><span>当前关卡</span><span id="phaseText">操作阶段</span></div>
+          <div class="panel-head"><span>褰撳墠鍏冲崱</span><span id="phaseText">鎿嶄綔闃舵</span></div>
           <div id="challengeBody"></div>
-          <div class="hint-toolbar"><button id="hintButton" type="button" class="outline-btn">需要提示？</button><span id="hintStatus">不扣分 · 随时求助</span></div>
+          <div class="hint-toolbar"><button id="hintButton" type="button" class="outline-btn">闇€瑕佹彁绀猴紵</button><span id="hintStatus">涓嶆墸鍒?路 闅忔椂姹傚姪</span></div>
           <div id="hintContent" class="hint-content" aria-live="polite"></div>
         </section>
         <section class="panel progress">
-          <div class="panel-head"><span>任务册</span><span id="progressText">0 / 20</span></div>
-          <div class="course-map-switch" role="tablist" aria-label="课程地图"><button id="theoryMapBtn" type="button" class="outline-btn active">理论力学地图</button><button id="materialsMapBtn" type="button" class="outline-btn">材料力学地图</button></div><div class="course-switch"><button data-map="theory" id="staticsCourseBtn" type="button" class="outline-btn">理论力学 · 静力学</button><button id="axialCourseBtn" type="button" class="outline-btn">材料力学 · 轴向杆</button><button id="kinematicsCourseBtn" type="button" class="outline-btn">理论力学 · 运动学</button><button id="dynamicsCourseBtn" type="button" class="outline-btn">理论力学 · 质点动力学</button><button id="rigidCourseBtn" type="button" class="outline-btn">理论力学 · 刚体动力学</button><button id="vibrationCourseBtn" type="button" class="outline-btn">理论力学 · 振动基础</button><button id="lagrangianCourseBtn" type="button" class="outline-btn">理论力学 · 分析力学</button><button id="torsionCourseBtn" type="button" class="outline-btn">材料力学 · 圆轴扭转</button><button id="stressTransformCourseBtn" type="button" class="outline-btn">材料力学 · 组合应力</button><button id="beamMaterialCourseBtn" type="button" class="outline-btn">材料力学 · 梁弯曲</button><button id="bucklingCourseBtn" type="button" class="outline-btn">材料力学 · 屈曲稳定</button><button id="fatigueCourseBtn" type="button" class="outline-btn">材料力学 · 疲劳强度</button></div><label for="unitSelect">学习单元</label><select id="unitSelect" aria-label="选择学习单元"></select>
+          <div class="panel-head"><span>浠诲姟鍐?/span><span id="progressText">0 / 20</span></div>
+          <div class="course-map-switch" role="tablist" aria-label="璇剧▼鍦板浘"><button id="theoryMapBtn" type="button" class="outline-btn active">鐞嗚鍔涘鍦板浘</button><button id="materialsMapBtn" type="button" class="outline-btn">鏉愭枡鍔涘鍦板浘</button></div><div class="course-switch"><button data-map="theory" id="staticsCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 闈欏姏瀛?/button><button id="axialCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 杞村悜鏉?/button><button id="kinematicsCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 杩愬姩瀛?/button><button id="dynamicsCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 璐ㄧ偣鍔ㄥ姏瀛?/button><button id="rigidCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 鍒氫綋鍔ㄥ姏瀛?/button><button id="vibrationCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 鎸姩鍩虹</button><button id="lagrangianCourseBtn" type="button" class="outline-btn">鐞嗚鍔涘 路 鍒嗘瀽鍔涘</button><button id="torsionCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 鍦嗚酱鎵浆</button><button id="stressTransformCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 缁勫悎搴斿姏</button><button id="beamMaterialCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 姊佸集鏇?/button><button id="bucklingCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 灞堟洸绋冲畾</button><button id="fatigueCourseBtn" type="button" class="outline-btn">鏉愭枡鍔涘 路 鐤插姵寮哄害</button></div><label for="unitSelect">瀛︿範鍗曞厓</label><select id="unitSelect" aria-label="閫夋嫨瀛︿範鍗曞厓"></select>
           <div id="levelList"></div>
         </section>
         <details class="panel reasoning" id="reasoningDetails">
-          <summary>推理工具 · 需要时展开</summary>
+          <summary>鎺ㄧ悊宸ュ叿 路 闇€瑕佹椂灞曞紑</summary>
           <section class="cards">
-            <div class="panel-head"><span>推理卡牌</span><button id="clearCards" class="text-btn">清空</button></div>
-            <p class="small">点击任意卡片查看思路，可反复阅读；不需要按顺序刷卡。</p>
+            <div class="panel-head"><span>鎺ㄧ悊鍗＄墝</span><button id="clearCards" class="text-btn">娓呯┖</button></div>
+            <p class="small">鐐瑰嚮浠绘剰鍗＄墖鏌ョ湅鎬濊矾锛屽彲鍙嶅闃呰锛涗笉闇€瑕佹寜椤哄簭鍒峰崱銆?/p>
             <div id="cardTray" class="card-tray"></div>
-            <div id="cardSlots" class="card-slots"><div class="slot" data-slot="object">研究对象</div><div class="slot" data-slot="condition">条件</div><div class="slot" data-slot="balance">平衡</div><div class="slot" data-slot="moment">取矩</div><div class="slot" data-slot="check">检查</div></div>
+            <div id="cardSlots" class="card-slots"><div class="slot" data-slot="object">鐮旂┒瀵硅薄</div><div class="slot" data-slot="condition">鏉′欢</div><div class="slot" data-slot="balance">骞宠　</div><div class="slot" data-slot="moment">鍙栫煩</div><div class="slot" data-slot="check">妫€鏌?/div></div>
             <div id="cardFeedback" class="feedback" aria-live="polite"></div>
           </section>
         </details>
       </aside>
     </section>
   </main>
-  <dialog id="resetDialog"><form method="dialog"><h3>确认重置？</h3><p>会清除本机保存的教学进度与卡牌记录。</p><div><button value="cancel" class="outline-btn">取消</button><button value="reset" class="solid-btn">确认重置</button></div></form></dialog>
-  <script src="curriculum.js?v=statics-1"></script>
-  <script src="materials-curriculum.js?v=1"></script>
-  <script src="axial-scene.js?v=1"></script>
-  <script src="kinematics-curriculum.js?v=1"></script>
-  <script src="kinematics-scene.js?v=1"></script>
-  <script src="particle-dynamics-curriculum.js?v=1"></script>
-  <script src="particle-dynamics-scene.js?v=1"></script>
-  <script src="rigid-body-curriculum.js?v=1"></script>
-  <script src="rigid-body-scene.js?v=1"></script>
-  <script src="vibration-curriculum.js?v=1"></script>
-  <script src="vibration-scene.js?v=1"></script>
-  <script src="lagrangian-curriculum.js?v=1"></script>
-  <script src="lagrangian-scene.js?v=1"></script>
-  <script src="torsion-curriculum.js?v=1"></script>
-  <script src="torsion-scene.js?v=1"></script>
-  <script src="stress-transform-curriculum.js?v=1"></script>
-  <script src="stress-transform-scene.js?v=1"></script>
-  <script src="beam-material-curriculum.js?v=1"></script>
-  <script src="beam-material-scene.js?v=1"></script>
-  <script src="buckling-curriculum.js?v=1"></script>
-  <script src="buckling-scene.js?v=1"></script>
-  <script src="fatigue-curriculum.js?v=1"></script>
-  <script src="fatigue-scene.js?v=1"></script>
-  <script src="engine-browser.js?v=1"></script>
-  <script src="statics-scenes.js?v=statics-1"></script>
-  <script src="playground.js?v=statics-1"></script>
-  <script src="workspace-layout.js?v=1"></script>
+  <dialog id="resetDialog"><form method="dialog"><h3>纭閲嶇疆锛?/h3><p>浼氭竻闄ゆ湰鏈轰繚瀛樼殑鏁欏杩涘害涓庡崱鐗岃褰曘€?/p><div><button value="cancel" class="outline-btn">鍙栨秷</button><button value="reset" class="solid-btn">纭閲嶇疆</button></div></form></dialog>
+  <script src="js/curriculum.js?v=statics-1"></script>
+  <script src="js/materials-curriculum.js?v=1"></script>
+  <script src="js/axial-scene.js?v=1"></script>
+  <script src="js/kinematics-curriculum.js?v=1"></script>
+  <script src="js/kinematics-scene.js?v=1"></script>
+  <script src="js/particle-dynamics-curriculum.js?v=1"></script>
+  <script src="js/particle-dynamics-scene.js?v=1"></script>
+  <script src="js/rigid-body-curriculum.js?v=1"></script>
+  <script src="js/rigid-body-scene.js?v=1"></script>
+  <script src="js/vibration-curriculum.js?v=1"></script>
+  <script src="js/vibration-scene.js?v=1"></script>
+  <script src="js/lagrangian-curriculum.js?v=1"></script>
+  <script src="js/lagrangian-scene.js?v=1"></script>
+  <script src="js/torsion-curriculum.js?v=1"></script>
+  <script src="js/torsion-scene.js?v=1"></script>
+  <script src="js/stress-transform-curriculum.js?v=1"></script>
+  <script src="js/stress-transform-scene.js?v=1"></script>
+  <script src="js/beam-material-curriculum.js?v=1"></script>
+  <script src="js/beam-material-scene.js?v=1"></script>
+  <script src="js/buckling-curriculum.js?v=1"></script>
+  <script src="js/buckling-scene.js?v=1"></script>
+  <script src="js/fatigue-curriculum.js?v=1"></script>
+  <script src="js/fatigue-scene.js?v=1"></script>
+  <script src="js/engine-browser.js?v=1"></script>
+  <script src="js/statics-scenes.js?v=statics-1"></script>
+  <script src="js/playground.js?v=statics-1"></script>
+  <script src="js/workspace-layout.js?v=1"></script>
   <link rel="stylesheet" href="axial-chapter.css?v=1">
-  <script src="release-view.js?v=1"></script>
+  <script src="js/release-view.js?v=1"></script>
   <script>window.MathJax={startup:{typeset:false},svg:{fontCache:'local'},options:{enableMenu:false,enableAssistiveMml:false},loader:{load:[]}};</script>
   <script src="vendor/mathjax-tex-svg.js"></script>
-  <script src="lesson-math.js?v=1"></script>
-  <script src="formula-guide.js?v=1"></script>
+  <script src="js/lesson-math.js?v=1"></script>
+  <script src="js/formula-guide.js?v=1"></script>
   <link rel="stylesheet" href="formula-guide.css?v=1">
 </body>
 </html>
+

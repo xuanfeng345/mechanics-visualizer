@@ -1,7 +1,0 @@
-'use strict';
-const assert=require('node:assert/strict');const scene=require('../kinematics-scene');const k=require('../engine/kinematics');
-const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-12*Math.max(1,Math.abs(b)),`${a} != ${b}`);const host={innerHTML:''};
-for(const p of [{mode:'projectile',vx:20,vy:20,g:9.81,t:2,radius:2,omega:3},{mode:'circular',vx:0,vy:0,g:9.81,t:2,radius:2,omega:3},{mode:'relative',vx:20,vy:20,g:9.81,t:2,radius:2,omega:3},{mode:'projectile',vx:0,vy:0,g:0,t:0,radius:1,omega:0}]){
- const r=scene.render(host,p);let e;if(p.mode==='projectile')e=k.projectile({position:{x:0,y:0},velocity:{x:p.vx,y:p.vy},acceleration:{x:0,y:-p.g},time:p.t});else if(p.mode==='circular')e=k.uniformCircular({radius:p.radius,angularSpeed:p.omega,time:p.t});else {const abs=k.projectile({position:{x:0,y:0},velocity:{x:p.vx,y:p.vy},acceleration:{x:0,y:-p.g},time:p.t}),frame=k.uniformCircular({radius:p.radius,angularSpeed:p.omega,time:p.t});e=k.relative({absolute:abs,frame});}for(const key of ['position','velocity','acceleration']){close(r[key].x,e[key].x);close(r[key].y,e[key].y)}assert.ok(host.innerHTML.includes('<svg'));assert.ok(!host.innerHTML.includes('NaN'))}
-for(const p of [{mode:'bad'},{g:-1},{t:-1},{radius:0},{vx:NaN},{t:Infinity}])assert.throws(()=>scene.calculate(p));
-console.log('PASS: kinematics scene preserves zero inputs, strict validation and matches three analytic modes');

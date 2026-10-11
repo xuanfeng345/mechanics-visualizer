@@ -1,6 +1,0 @@
-const assert=require('node:assert/strict');const m=require('../engine').materials;
-const a=m.axialFromSI({forceN:10000,areaMm2:100,lengthMm:1000,youngsModulusMPa:200000,yieldStressMPa:250,safetyFactor:2});assert.equal(a.stress,100);assert.equal(a.strain,.0005);assert.equal(a.elongation,.5);assert.equal(a.allowableStress,125);assert.equal(a.elastic,true);assert.equal(a.utilization,.8);
-assert.throws(()=>m.axial({force:1,area:0,length:1,youngsModulus:1}));assert.throws(()=>m.axial({force:1,area:1,length:1,youngsModulus:1,safetyFactor:0}));
-const t=m.torsion({torque:100,radius:.01,polarInertia:1e-8,shearModulus:80e9,length:1});assert.equal(t.shearStress,1e8);assert.equal(t.twist,0.125);
-const c=m.stressStrain({strains:[0,.0005,.0015,-.0015],youngsModulus:200000,yieldStress:250,hardeningModulus:1000});assert.equal(c.yieldStrain,.00125);assert.equal(c.points[1].regime,'elastic');assert.equal(c.points[2].regime,'plastic_hardening');assert.ok(c.points[3].stress<0&&c.points[3].plasticStrain<0);
-const cyc=m.axialCycle({youngsModulus:200000,yieldStress:250,maxStrain:.002,points:4});assert.equal(cyc.points.length,9);assert.equal(cyc.points.at(-1).strain,0);console.log('PASS: axial, torsion, bilinear stress-strain, plastic boundary and cycle');

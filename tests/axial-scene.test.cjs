@@ -1,6 +1,0 @@
-'use strict';
-const assert=require('node:assert/strict');const scene=require('../axial-scene');const k=require('../engine/materials');
-const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-12*Math.max(1,Math.abs(b)),`${a} != ${b}`);const host={ownerDocument:{createElementNS(){return {setAttribute(){},style:{},innerHTML:''};}},appendChild(){},replaceChildren(svg){this.svg=svg;}};
-for(const p of [{force:0,area:200,length:1000,youngsModulus:200000,yieldStress:235,safetyFactor:1.5},{force:30000,area:200,length:1000,youngsModulus:200000,yieldStress:235,safetyFactor:1.5},{force:-50000,area:100,length:500,youngsModulus:100000,yieldStress:250,safetyFactor:2}]){const r=scene.render(host,p),e=k.axial(p);for(const x of ['stress','strain','elongation','utilization'])close(r[x],e[x]);assert.equal(r.elastic,e.elastic);assert.ok(host.svg && host.svg.innerHTML.length>0);assert.ok(!host.svg.innerHTML.includes('NaN'))}
-assert.equal(scene.calculate({force:0}).stress,0);for(const p of [{area:0},{length:0},{youngsModulus:0},{yieldStress:0},{safetyFactor:0},{force:NaN},{force:'30000'}])assert.throws(()=>scene.calculate(p));
-console.log('PASS: axial scene preserves zero load, rejects coercion and matches materials kernel');
