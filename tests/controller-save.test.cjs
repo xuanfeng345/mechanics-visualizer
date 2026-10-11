@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const path=require('node:path');
+const root=path.join(__dirname,'../js');
+const sandbox={window:{},document:{querySelector:()=>({}),querySelectorAll:()=>[]}};
+vm.createContext(sandbox);
+for(const file of ['curriculum','materials-curriculum','kinematics-curriculum','particle-dynamics-curriculum','rigid-body-curriculum','vibration-curriculum','lagrangian-curriculum','torsion-curriculum','stress-transform-curriculum','beam-material-curriculum','buckling-curriculum','fatigue-curriculum'])vm.runInContext(fs.readFileSync(path.join(root,file+'.js'),'utf8'),sandbox);
+const source=fs.readFileSync(path.join(root,'playground.js'),'utf8');
+assert.ok(source.includes('  let restored=false;'));
+vm.runInContext(source.split('  let restored=false;')[0]+'window.testAPI={base,valid,mergeSaved,courseRecords};})();',sandbox);
+const {base,valid,mergeSaved,courseRecords}=sandbox.window.testAPI;
+const done={independent:true,assisted:false,hintLevel:0};
+for(const [name,[pack,key]] of Object.entries(courseRecords)){
+ const saved=base();saved.curriculum=name;saved.scene=pack.levels[0].scene;
+ saved[key][pack.levels[0].id]={...done};
+ saved.completed[courseRecords.statics[0].levels[0].id]={...done};
+ assert.equal(valid(saved),true,name+' valid with independent statics progress');
+ saved.level=pack.levels.length+1;assert.equal(valid(saved),false,name+' invalid level');
+ saved.level=0;saved.unit=pack.units.length;assert.equal(valid(saved),false,name+' invalid unit');
+ saved.unit=0;saved[key].bogus={...done};assert.equal(valid(saved),false,name+' foreign lesson');
+}
+const old=base();delete old.fatigue;delete old.fatigueCompleted;delete old.bucklingCompleted;
+old.completed[courseRecords.statics[0].levels[0].id]={...done};
+const before=JSON.stringify(old),merged=mergeSaved(old);
+assert.equal(valid(merged),true);assert.equal(JSON.stringify(old),before,'migration must not mutate source');
+assert.deepEqual(merged.completed,old.completed);assert.ok(merged.fatigue);assert.ok(merged.fatigueCompleted);
+const broken=base();broken.fatigueCompleted=null;assert.equal(valid(mergeSaved(broken)),false,'explicit corrupt maps are not masked');
+assert.equal(valid({...base(),curriculum:'unknown'}),false);
+console.log('PASS: 12 course save maps, bounds, missing-field migration and source preservation');

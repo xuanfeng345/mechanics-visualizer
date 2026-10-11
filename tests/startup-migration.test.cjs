@@ -1,0 +1,7 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');const root=path.join(__dirname,'../js'),source=fs.readFileSync(path.join(root,'playground.js'),'utf8');
+function load(saved){let writes=0;const c={window:{},document:{querySelector:()=>({}),querySelectorAll:()=>[]},localStorage:{getItem:k=>k==='mechanics-playground-v3'?JSON.stringify(saved):null,setItem(){writes++}}};vm.createContext(c);for(const f of fs.readdirSync(root).filter(f=>f.endsWith('curriculum.js')))vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),c);vm.runInContext(source.slice(0,source.indexOf('  const fmt='))+'window.result={state,restored};})();',c);return {...c.window.result,writes};}
+const legacy={schema:3,mode:'teach',level:20,unit:4,scene:'lever',F:30,completed:{'statics-u0-l1':{independent:true,assisted:false,hintLevel:0}},slots:{object:true}};
+const good=load(legacy);assert.equal(good.restored,true);assert.equal(good.state.level,20);assert.equal(good.state.F,30);assert.equal(good.writes,0);
+for(const patch of [{F:'bad'},{level:-1},{completed:{bogus:{independent:true,assisted:false,hintLevel:0}}}]){const result=load({...legacy,...patch});assert.equal(result.restored,false);assert.equal(result.state.schema,4);assert.equal(result.writes,0,'startup must not overwrite rejected source');}
+console.log('PASS: startup validates shared legacy migration, preserves completed chapter and never writes rejected source');

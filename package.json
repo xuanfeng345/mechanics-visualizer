@@ -2,7 +2,7 @@
   "name": "mechanics-visualizer",
   "version": "0.1.0",
   "private": true,
-  "description": "Three mechanics interactive visualization learning tool with theory, materials, analytic kernels, and validation scenes.",
+  "description": "三力学交互式可视化学习工具：理论力学与材料力学课程、解析内核和可验证场景。",
   "type": "commonjs",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
@@ -10,7 +10,15 @@
     "test:kernel": "node tests/full-kernel-regression.cjs",
     "check": "node --check js/playground.js && node --check js/engine-browser.js && node --check js/lesson-math.js && node --check js/formula-guide.js"
   },
-  "engines": {"node": ">=18"},
-  "keywords": ["mechanics", "physics", "theory-mechanics", "strength-of-materials", "visualization"],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mechanics",
+    "physics",
+    "theory-mechanics",
+    "strength-of-materials",
+    "visualization"
+  ],
   "license": "MIT"
 }
