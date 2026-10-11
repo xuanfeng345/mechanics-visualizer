@@ -5,7 +5,7 @@
   function lever(){const p=engine.dynamics.rodRelease({length:2,mass:20/9.81,phi:0,force:engine.vectors.vec(0,0)});return {type:'rod',model:p};}
   function incline(){const p=engine.dynamics.inclineRelease({mass:10,alpha:30,muK:.3});return {type:'incline',model:p};}
   function render(s){if(!s)return;$('#statusTag').textContent=s.type==='rod'?`释放观察 · ω=${s.omega.toFixed(2)} rad/s`:`释放观察 · v=${s.velocity.toFixed(2)} m/s`;
-    if(s.type==='rod'){const rot=`rotate(${s.phi*180/Math.PI} 100 214)`,beam=$('#beam'),applied=$('#appliedForce'),weight=$('#weightForce');if(beam)beam.setAttribute('transform',rot);if(applied)applied.setAttribute('transform',rot);if(weight)weight.setAttribute('transform',rot);}
+    if(s.type==='rod'){const rot=`rotate(${-s.phi*180/Math.PI} 100 214)`,beam=$('#beam'),applied=$('#appliedForce'),weight=$('#weightForce');if(beam)beam.setAttribute('transform',rot);if(applied)applied.setAttribute('transform',rot);if(weight)weight.setAttribute('transform',`translate(${290*(Math.cos(s.phi)-1)} ${-290*Math.sin(s.phi)})`);}
     if(s.type==='incline'){const block=$('#alternateScene .box');if(block){const a=(s.alpha||30)*Math.PI/180;block.setAttribute('transform',`translate(${s.position*Math.cos(a)*18} ${-s.position*Math.sin(a)*18})`);}}
 $('[data-motion-readout]')?.remove();const e=document.createElement('span');e.dataset.motionReadout='';e.className='motion-readout';e.textContent=s.type==='rod'?` t=${s.time.toFixed(2)} s · α=${s.acceleration.toFixed(2)} rad/s²`:` t=${s.time.toFixed(2)} s · a=${s.acceleration.toFixed(2)} m/s²`;$('.controls .panel-head').append(e);}
   function stop(){if(timer){cancelAnimationFrame(timer);timer=null;}$('#pauseBtn').disabled=true;$('#resetMotionBtn').disabled=!state;}
