@@ -2,17 +2,20 @@
 (function (root) {
   'use strict';
   var NS = 'http://www.w3.org/2000/svg';
-  function finite(v, fallback) { var n = Number(v); return Number.isFinite(n) ? n : fallback; }
-  function vector(v, fallbackX, fallbackY) {
-    if (v && typeof v === 'object') return { x: finite(v.x, fallbackX), y: finite(v.y, fallbackY) };
-    return { x: finite(v, fallbackX), y: fallbackY };
+  function finite(v, fallback, name) { if (v === undefined) return fallback; if (typeof v !== 'number' || !Number.isFinite(v)) throw new TypeError((name || 'value') + ' must be finite'); return v; }
+  function vector(v, fallbackX, fallbackY, name) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) return { x: finite(v.x, fallbackX, (name||'vector')+'.x'), y: finite(v.y, fallbackY, (name||'vector')+'.y') };
+    if (v === undefined) return { x: fallbackX, y: fallbackY };
+    throw new TypeError((name || 'vector') + ' must be an object');
   }
   function paramsOf(p) {
     p = p || {};
-    var force = vector(p.force, finite(p.force, 10), 0);
-    var velocity = vector(p.velocity, finite(p.v, 0), 0);
-    var mass = Math.max(1e-9, Math.abs(finite(p.mass, 1)));
-    var dt = Math.max(0, finite(p.dt, 1));
+    var force = vector(p.force, 10, 0, 'force');
+    var velocity = vector(p.velocity, 0, 0, 'velocity');
+    var mass = finite(p.mass, 1, 'mass');
+    var dt = finite(p.dt, 1, 'dt');
+    if (mass <= 0) throw new RangeError('mass must be positive');
+    if (dt < 0) throw new RangeError('dt must be nonnegative');
     return { force: force, mass: mass, velocity: velocity, dt: dt };
   }
   function calculate(input) {
