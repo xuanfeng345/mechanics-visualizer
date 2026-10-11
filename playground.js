@@ -204,10 +204,10 @@
     if(state.mode==='free'){$('#phaseText').textContent='自由探索';body.innerHTML='<h3>自由实验台</h3><p>可切换杆件、支座、梁和斜面。教学进度不会受影响。</p><button id="returnLearning" class="solid-btn">返回教学</button>';$('#returnLearning').onclick=()=>{state.mode='teach';if(!current())state.level=0;applySetup();render();save();};renderHints();return;}
     if(!l){$('#phaseText').textContent='章节完成';body.innerHTML='<h3>静力学入门篇已走完</h3><p>辅助完成的关卡值得再做一次无提示复习。选择任一单元即可重练。</p>';renderHints();return;}
     $('#phaseText').textContent=state.phase==='op'?(l.operation?'操作 → 迁移':'观察 → 辨析'):state.phase==='passed'?'本题通过':'独立作答';
-    const link=`<a href="index.html?concept=${encodeURIComponent(l.concept)}" target="_blank" rel="noopener">关联知识卡 ↗</a>`;
+    const formula=l.formulaLatex||l.formula||'';const link=`<a href="index.html?concept=${encodeURIComponent(l.concept)}" target="_blank" rel="noopener">关联知识卡 ↗</a>`;
     if(state.phase==='op')body.innerHTML=`<h3>${l.title}</h3><p>${l.intro}</p><p class="small">${l.operation?'先完成画面对应的实验，再进入计算或辨析题。':'本关为观察与独立计算，无需反复调整控件。'}</p><button id="opDone" class="solid-btn">${l.operation?'检查实验 →':'进入答题 →'}</button><p id="taskFeedback" role="status"></p>${link}`;
     else if(state.phase==='passed')body.innerHTML=`<h3>✓ 本题通过</h3><p id="answerMsg">${l.solution}</p><button id="nextLesson" class="solid-btn">继续下一关 →</button><p>${link}</p>`;
-    else body.innerHTML=`<h3>${l.title}</h3><p>${l.question}</p><p class="small">${typeof l.answer==='number'?'可填小数或简单分数，保留两位小数；误差允许 ±0.01。':'按题目给定的词或顺序作答。'}</p><form id="answerForm" class="answer-row"><input id="answer" aria-label="题目答案" placeholder="${typeof l.answer==='number'?'数值 / 分数':'文字 / 数值序列'}"><button id="submit" type="button" class="solid-btn">验证答案</button></form><p id="answerMsg" role="status"></p><button id="backToOperation" class="text-btn">返回实验</button><p>${link}</p>`;
+    else body.innerHTML=`<h3>${l.title}</h3><p>${l.question}</p><p class="small">${typeof l.answer==='number'?'可填小数或简单分数，保留两位小数；误差允许 ±0.01。':'按题目给定的词或顺序作答。'}</p><form id="answerForm" class="answer-row"><input id="answer" aria-label="题目答案" placeholder="${typeof l.answer==='number'?'数值 / 分数':'文字 / 数值序列'}"><button id="submit" type="button" class="solid-btn">验证答案</button></form><p class="formula-display" aria-label="本关公式">公式：${formula||'见题目解析'}</p><p id="answerMsg" role="status"></p><button id="backToOperation" class="text-btn">返回实验</button><p>${link}</p>`;
     $('#opDone')?.addEventListener('click',()=>{if(!operationOK(l)){$('#taskFeedback').textContent='尚未满足实验条件。可点下方提示获取方向，不扣分。';return;}state.phase='answer';renderChallenge();save();});
     $('#submit')?.addEventListener('click',submit);
     $('#answerForm')?.addEventListener('submit',e=>{e.preventDefault();submit();});
@@ -232,6 +232,10 @@
     renderScene();renderLevels();renderCards();renderChallenge();
   }
   $('#unitSelect').onchange=e=>{state.unit=Number(e.target.value);renderLevels();save();};
+  const mapButtons={theory:$$('[data-map="theory"]'),materials:$$('[data-map="materials"]')};
+  const mapCourseIds={theory:['staticsCourseBtn','kinematicsCourseBtn','dynamicsCourseBtn','rigidCourseBtn','vibrationCourseBtn','lagrangianCourseBtn'],materials:['axialCourseBtn','torsionCourseBtn','stressTransformCourseBtn','beamMaterialCourseBtn','bucklingCourseBtn','fatigueCourseBtn']};
+  function setCourseMap(map){for(const [name,ids] of Object.entries(mapCourseIds))for(const id of ids){const b=$('#'+id);if(b)b.hidden=name!==map;}$('#theoryMapBtn').classList.toggle('active',map==='theory');$('#materialsMapBtn').classList.toggle('active',map==='materials');}
+  $('#theoryMapBtn').onclick=()=>setCourseMap('theory');$('#materialsMapBtn').onclick=()=>setCourseMap('materials');setCourseMap('theory');
   $('#staticsCourseBtn').onclick=()=>{state.curriculum='statics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学静力学，原材料章节进度保留。');};
   $('#axialCourseBtn').onclick=()=>{state.curriculum='axial';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到材料力学轴向杆，静力学进度保留。');};
   $('#kinematicsCourseBtn').onclick=()=>{state.curriculum='kinematics';state.level=0;state.unit=0;state.phase='op';applySetup();render();save();notice('已切换到理论力学运动学，静力学与材料力学进度保留。');};
