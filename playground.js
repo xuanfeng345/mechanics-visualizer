@@ -235,7 +235,9 @@
   function submit(){
     const l=current(),raw=$('#answer').value.trim(),msg=$('#answerMsg');$('#nextLesson')?.remove();
     if(!raw){msg.textContent='请填写答案后验证。';return;}
-    const ok=typeof l.answer==='number'?Math.abs(numeric(raw)-l.answer)<=Math.min(l.tolerance||.01,.01):norm(raw)===norm(String(l.answer));
+    const parsed=typeof l.answer==='number'?numeric(raw):null;
+    if(typeof l.answer==='number'&&!Number.isFinite(parsed)){msg.textContent='输入格式未识别：请按题目单位只填数值、小数、简单分数（如40/3）或科学计数法（如2e3）；不要附加单位或算式，分母不能为零。本次不计为答错。';msg.style.color='#a33e32';return;}
+    const ok=typeof l.answer==='number'?Math.abs(parsed-l.answer)<=Math.min(l.tolerance||.01,.01):norm(raw)===norm(String(l.answer));
     if(!ok){state.wrong++;msg.textContent='✗ 暂不正确。请再检查单位、条件和列式。'+(state.wrong>=2?' 已尝试两次，需要一点提示吗？点击下方按钮即可。':'');msg.style.color='#a33e32';save();return;}
     markComplete();msg.textContent='✓ 回答正确！ '+l.solution;msg.style.color='#28645a';
     const next=document.createElement('button');next.id='nextLesson';next.className='solid-btn';next.textContent='继续下一关 →';msg.after(next);next.onclick=advance;
