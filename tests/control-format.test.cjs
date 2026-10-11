@@ -1,0 +1,4 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');const s=fs.readFileSync(path.join(__dirname,'../playground.js'),'utf8');const a=s.indexOf('    const controlFormat='),b=s.indexOf('    const controlValue=',a);const c={};vm.createContext(c);vm.runInContext(s.slice(a,b)+'globalThis.format=controlFormat;',c);
+for(const n of [8e-6,1e-8,.0005,-.0004,2e11,80e9,235,1.25,0]){const text=c.format(n);assert.ok(Number.isFinite(Number(text)));if(n!==0){assert.notEqual(Number(text),0);assert.ok(Math.abs((Number(text)-n)/n)<.001);}}
+assert.equal(c.format(0),'0');assert.equal(c.format(1.25),'1.25');assert.equal(c.format(8e-6),'8.000e-6');console.log('PASS: control readouts preserve nonzero small physical quantities and large SI moduli');
