@@ -2,19 +2,16 @@
 (function (root) {
   'use strict';
   var NS = 'http://www.w3.org/2000/svg';
-  function finite(value, fallback) {
-    var n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
+  function finite(value, fallback, name) {
+    if (value === undefined) return fallback;
+    if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError((name || 'value') + ' must be finite');
+    return value;
   }
   function parameters(input) {
     var p = input || {};
-    return {
-      mass: Math.max(1e-9, Math.abs(finite(p.mass, 1))),
-      stiffness: Math.max(0, finite(p.stiffness, 20)),
-      initialCoordinate: finite(p.initialCoordinate, 0.15),
-      initialVelocity: finite(p.initialVelocity, 0),
-      time: Math.max(0, finite(p.time, 0))
-    };
+    var q = { mass: finite(p.mass, 1, 'mass'), stiffness: finite(p.stiffness, 20, 'stiffness'), initialCoordinate: finite(p.initialCoordinate, 0.15, 'initialCoordinate'), initialVelocity: finite(p.initialVelocity, 0, 'initialVelocity'), time: finite(p.time, 0, 'time') };
+    if (q.mass <= 0 || q.stiffness <= 0 || q.time < 0) throw new RangeError('mass and stiffness must be positive; time must be non-negative');
+    return q;
   }
   function calculate(input) {
     var p = parameters(input), q, velocity, omega = Math.sqrt(p.stiffness / p.mass);
