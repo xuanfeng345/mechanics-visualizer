@@ -16,3 +16,9 @@ desktop.ini
 # 那个字段必须保持为空字符串再提交。填了 key 的版本不要推上来。
 # 以后如果改成从独立文件读 key，把那个文件名加到这里。
 config.local.js
+
+# ── 本地浏览器验收产物 ────────────────────────────────
+.browser-verification-profile/
+tests/demo-frames/
+tests/capture-demo.cjs
+tests/expanded-browser-courses.js

@@ -1,6 +1,10 @@
-# 三力学 AI 可视化学习工具
-注意：接入api方法下方有讲，同时理论力学篇机械振动基础往后的章节模型有错误
-一个集成了理论力学、结构力学和材料力学的交互式可视化学习平台，支持 2D模型展示、参数调整、习题生成和 AI 自动解答功能。
+# 三力学可视化学习工具 · v0.1.0
+
+本仓库保留原有三力学可视化工具，并增量提供一个可验证的理论力学与材料力学操练场。推荐从 [`playground.html`](playground.html) 进入扩展课程；原入口 [`index.html`](index.html) 和旧模型继续保留。
+
+当前扩展课程包含12个课程包、108关、16个自由实验场景、分层提示、MathJax公式、解析/数值内核、课程独立进度和JSON备份。架构和边界见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
+
+> 重要边界：这是可视化学习辅助和课程操练，不替代教材、教师、真实实验、考试训练、工程设计或设计规范。许多模型是理想化解析模型或数值近似，不能据此直接做工程决策。
 
 ## ✨ 主要功能
 
@@ -128,12 +132,19 @@
 
 ## 📁 项目结构
 
+详细分层见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。核心入口如下：
+
 ```
 力学/
-├── index.html          # 主页面
-├── main.js             # 主要逻辑代码
-├── styles.css          # 样式文件
-└── README.md          # 项目说明文档
+├── index.html / main.js       # 原有工具入口与逻辑
+├── playground.html            # 扩展课程入口
+├── playground.js              # 课程、答题、进度与备份控制器
+├── *-curriculum.js            # 课程数据
+├── *-scene.js                 # 浏览器 SVG 场景
+├── engine/                    # Node 解析/数值内核
+├── engine-browser.js           # 浏览器释放内核镜像
+├── tests/                     # Node、Python与真实Edge验证
+└── package.json               # 统一检查与测试命令
 ```
 
 ## 🎓 适用场景
