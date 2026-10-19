@@ -1,0 +1,78 @@
+/* Learning UI uses the controller's validated state and backup path. No second progress store. */
+(() => {
+  'use strict';
+  const app=window.MechanicsApp,core=window.MechanicsLearning;
+  if(!app||!core)return;
+  const $=s=>document.querySelector(s);
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const laws={statics:'对同一研究对象列合力与合矩平衡',kinematics:'由位置对时间求导，区分速度与加速度','particle-dynamics':'对质点列 ΣF=ma，保留初始条件','rigid-body':'质心平动与绕质心转动分别列式',vibration:'建立 mẍ+cẋ+kx=0 并指定初始状态',lagrangian:'选独立广义坐标，建立 L=T−V',axial:'先用 σ=N/A，再用线弹性本构求变形',torsion:'同一截面的 T、J、r 代入 τ=Tr/J','beam-material':'先由平衡求反力，再求剪力、弯矩与变形','stress-transform':'先明确平面应力状态与角度正方向',buckling:'先判断细长弹性柱假设和有效长度',fatigue:'明确应力幅、均值应力及疲劳模型适用条件'};
+  let session=null,quiz=null,compare=null;
+  function current(){const s=app.getState();return app.courses[s.curriculum]?.[0].levels[s.level];}
+  function events(){return app.getState().learning?.events||[];}
+  function key(){const s=app.getState();return s.curriculum+'/'+current()?.id+'/'+(s.attemptSerial||0);}
+  function getSession(){if(!session||session.key!==key())session={key:key(),assisted:app.getState().attemptAssisted===true,prediction:null,reason:null,feedback:'',transfer:null};return session;}
+  function log(kind,correct,input='',tag='',context){const s=app.getState(),l=current();if(!context&&!l)return;app.log({id:context?.id||l.id,course:context?.course||s.curriculum,kind,correct,assisted:context?.assisted??(getSession().assisted||s.hints>0||s.wrong>0),at:Date.now(),input:String(input).slice(0,200),tag,...(kind==='answer'?{work:($('#reasoningWork')?.value||'').slice(0,1200)}:{})});}
+  function assist(tag){getSession().assisted=true;app.getState().attemptAssisted=true;log('hint',false,'',tag);}
+  function answer(l,input,correct){const parsed=app.numeric(input);log('answer',correct,input,correct?'':typeof l.answer==='number'?core.diagnose(l.answer,parsed).tag:'model');if(!correct){getSession().assisted=true;app.getState().attemptAssisted=true;}}
+  function begin(){session=null;quiz=null;}
+  function buildScaffold(){
+    const l=current(),s=app.getState(),old=$('#learningScaffold');
+    if(old)old.remove();$('#challengeBody .transfer-card')?.remove();if(!l||s.mode!=='teach')return;
+    const t=getSession(),seed=l.id.length,p=core.framework(s.curriculum,seed),reasonOptions=[laws[s.curriculum],'忽略约束和初始条件，直接套一个熟悉的公式','把所有力的大小相加，不考虑方向与作用点'],reasonShift=seed%3,reasonCorrect=(3-reasonShift)%3,reasons=reasonOptions.map((_,i)=>reasonOptions[(i+reasonShift)%3]),host=document.createElement('section');host.id='learningScaffold';host.className='learning-scaffold';
+    host.innerHTML=`<div class="learning-eyebrow">理解 → 建模 → 验证 → 迁移</div><details ${s.phase==='op'?'open':''}><summary>先想一想 · 本章概念检查</summary><p>${esc(p.question)}</p><div class="choice-stack">${p.choices.map((c,i)=>`<button type="button" class="outline-btn" data-predict="${i}" ${t.prediction!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.prediction===null?'':`<p class="learning-feedback">${t.prediction===p.correct?'判断正确。':'预测与规律不符。'}${esc(p.explanation)}</p>`}<p>建模时首先应该做什么？</p><div class="choice-stack">${reasons.map((c,i)=>`<button type="button" class="outline-btn" data-reason="${i}" ${t.reason!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.reason===null?'':`<p class="learning-feedback">${t.reason===reasonCorrect?'建模依据正确。':'先明确对象、条件和规律。'}${esc(laws[s.curriculum])}。</p>`}<p class="small">这是本章概念检查；下方关卡按题目给定条件独立作答。场景初值可能不同，实验前请核对参数。</p></details>`;
+    $('#challengeBody').prepend(host);
+    host.querySelectorAll('[data-predict]').forEach(b=>b.onclick=()=>{t.prediction=Number(b.dataset.predict);if(t.prediction!==p.correct){t.assisted=true;app.getState().attemptAssisted=true;}log('prediction',t.prediction===p.correct,p.choices[t.prediction],'concept');buildScaffold();renderHub();});
+    host.querySelectorAll('[data-reason]').forEach(b=>b.onclick=()=>{t.reason=Number(b.dataset.reason);if(t.reason!==reasonCorrect){t.assisted=true;app.getState().attemptAssisted=true;}log('reason',t.reason===reasonCorrect,b.textContent,'model');buildScaffold();renderHub();});
+    if(s.phase==='passed'){
+      const wrap=document.createElement('div');wrap.className='transfer-card';wrap.innerHTML='<h4>换条件，还能独立做吗？</h4><p>新题使用本章规律，不计入原关卡通关数。</p><button type="button" class="outline-btn" id="startTransfer">开始本章变式</button>';$('#challengeBody').append(wrap);
+      $('#startTransfer').onclick=()=>{startQuiz(s.curriculum,l.id,false);document.querySelector('[data-pane="learn"]').click();};
+    }
+  }
+  function stats(){return core.summary(events());}
+  function startQuiz(course,id,review){
+    const n=events().filter(e=>e.course===course&&e.id===id&&(['transfer','review'].includes(e.kind)||(e.kind==='hint'&&e.tag==='practice-hint'))).length;
+    quiz={course,id,review,exercise:core.exercise(course,n+id.length),assisted:false,done:false,input:'',feedback:''};renderHub();
+  }
+  function quizMarkup(){if(!quiz)return '';const q=quiz;return `<section class="review-quiz"><span class="learning-eyebrow">${q.review?'到期复习':'本章变式'} · ${esc(core.names[q.course])}</span><h3>不用原题答案，重新判断</h3><p>${esc(q.exercise.question)}</p><form id="reviewForm"><label>答案（${esc(q.exercise.unit)}）<input id="reviewInput" inputmode="decimal" autocomplete="off" value="${esc(q.input)}" ${q.done?'disabled':''}></label><button type="submit" class="solid-btn" ${q.done?'disabled':''}>检查答案</button></form><button type="button" id="reviewHint" class="text-btn">查看方法提示（计为辅助）</button><p id="reviewFeedback" role="status">${esc(q.feedback)}</p><button type="button" id="closeReview" class="text-btn">收起练习</button></section>`;}
+  function renderHub(){
+    const hub=$('#learningHub');if(!hub)return;
+    const all=stats(),due=all.filter(x=>x.due).sort((a,b)=>a.dueAt-b.dueAt),wrong=all.filter(x=>x.needsPractice),independent=all.filter(x=>x.independent).length,transfer=all.filter(x=>x.transfer).length,reviewed=all.filter(x=>x.reviews).length;
+    const rows=Object.keys(core.names).map(course=>{const [pack,record]=app.courses[course];return [course,[pack,record]];}).map(([course,[pack,record]])=>{const done=pack.levels.filter(l=>app.getState()[record]?.[l.id]).length;return {course,pack,done};});
+    const next=due[0]||wrong[0];
+    const fallback=rows.find(x=>x.course===app.getState().curriculum)||rows[0];
+    const nextId=next?.id||fallback.pack.levels.find(l=>!app.getState()[app.courses[fallback.course][1]][l.id]?.independent)?.id||fallback.pack.levels[0].id;
+    hub.innerHTML=`<div class="learning-eyebrow">MECHANICS / 学习中心</div><h2>理解一次，换题再验证。</h2><p class="small">从概念判断到独立解题。完成记录是学习证据，不代表已经永久掌握。</p><div class="learning-stats"><div><strong>${independent}</strong><span>原题独立完成</span></div><div><strong>${transfer}</strong><span>变式独立完成</span></div><div><strong>${reviewed}</strong><span>延迟复习通过</span></div></div><section class="next-study"><h3>${due.length?`${due.length} 项待复习`:'今天从这里继续'}</h3><p>${next?esc(core.names[next.course])+' · '+(wrong.some(x=>x.id===next.id)?'有待纠正的作答':'检验一段时间后能否独立完成'):'进入当前课程，先做概念判断，再独立作答。'}</p><button type="button" class="solid-btn" id="recommendedStudy">${due.length?'开始复习':'继续学习'}</button><p class="small">独立完成后 1 天复习；变式完成后 3 天复习；延迟复习通过后间隔 7、14、30 天。到期提示仅在打开页面时显示。</p></section>${quizMarkup()}<details ${wrong.length?'open':''}><summary>错题与待巩固 · ${wrong.length}</summary>${wrong.length?wrong.slice(0,12).map(x=>`<div class="study-row"><span>${esc(title(x.course,x.id))}<small>${esc(core.names[x.course])} · ${x.wrong} 次错误记录</small><small>最近作答：${esc(events().filter(e=>e.course===x.course&&e.id===x.id&&!e.correct&&['answer','transfer','review'].includes(e.kind)).at(-1)?.input||'未记录')}</small></span><button type="button" class="outline-btn" data-retry="${esc(x.course+'/'+x.id)}">重练</button></div>`).join(''):'<p class="small">尚无待纠正的作答。答错后会记录在这里，独立完成后移出待巩固队列。</p>'}</details><details><summary>课程路线 · 12 个课程包</summary>${rows.map(x=>`<div class="study-row"><span>${esc(core.names[x.course])}<small>练习 ${x.done}/${x.pack.levels.length} · ${all.filter(a=>a.course===x.course&&a.transfer).length} 项变式证据</small></span><button type="button" class="outline-btn" data-course="${x.course}">进入</button></div>`).join('')}<p class="small">建议先学静力学，再进入动力学与材料力学。向量、三角函数为共同基础；分析力学还需微积分。</p></details><details><summary>最近作答 · ${events().length} 条</summary>${events().slice(-12).reverse().map(e=>`<article class="event-row"><span>${esc(title(e.course,e.id))}</span><small>${esc(({answer:'原题',transfer:'变式',review:'复习',prediction:'概念预测',reason:'建模',hint:'提示'})[e.kind])} · ${e.kind==='hint'?'已使用辅助':e.correct?'正确':'待纠正'}${e.assisted?' · 含辅助':''} · ${esc(new Date(e.at).toLocaleDateString('zh-CN'))}</small>${e.kind==='hint'?'':`<details><summary>查看本次作答</summary><p>输入：${esc(e.input||'未填写')}</p>${e.work?`<pre class="saved-work">${esc(e.work)}</pre>`:''}</details>`}</article>`).join('')||'<p class="small">新的作答会保存在本机，并随 JSON 备份导出。旧进度保留，不倒推为新学习证据。最多保留最近 1500 条记录。</p>'}</details>`;
+    $('#recommendedStudy').onclick=()=>{if(due.length)startQuiz(next.course,next.id,true);else app.navigate(next?.course||fallback.course,nextId);};
+    hub.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>{const [course,id]=b.dataset.retry.split('/');app.navigate(course,id);});
+    hub.querySelectorAll('[data-course]').forEach(b=>b.onclick=()=>app.navigate(b.dataset.course,app.courses[b.dataset.course][0].levels[0].id));
+    if(quiz){$('#reviewForm').onsubmit=e=>{e.preventDefault();const q=quiz;if(q.done)return;const input=$('#reviewInput').value.trim(),value=app.numeric(input);q.input=input;if(!Number.isFinite(value)){q.feedback='请输入小数、分数或科学计数法，不附单位；格式错误不记录为答错。';renderHub();return;}const ok=core.grade(q.exercise,value),kind=q.review?'review':'transfer';const prior=events().filter(x=>x.course===q.course&&x.id===q.id&&x.correct&&!x.assisted&&['answer','transfer','review'].includes(x.kind)).at(-1);const delayed=prior&&Date.now()-prior.at>=core.DAY;log(kind==='review'&&!delayed?'transfer':kind,ok,input,ok?'':core.diagnose(q.exercise.answer,value).tag,{course:q.course,id:q.id,assisted:q.assisted});q.feedback=ok?`${q.assisted?'辅助完成，请稍后换题再试。':'本次独立完成。'} ${q.exercise.explanation}${q.review&&!delayed?' 本次未达到一天间隔，记录为变式练习。':''}`:core.diagnose(q.exercise.answer,value).text;q.done=ok;if(!ok)q.assisted=true;renderHub();};$('#reviewHint').onclick=()=>{if(!quiz.hintShown){log('hint',false,'','practice-hint',{course:quiz.course,id:quiz.id,assisted:true});quiz.hintShown=true;}quiz.assisted=true;quiz.feedback=quiz.exercise.explanation;renderHub();};$('#closeReview').onclick=()=>{quiz=null;renderHub();};}
+  }
+  function title(course,id){return app.courses[course]?.[0].levels.find(l=>l.id===id)?.title||'练习';}
+  function captureExperiment(){
+    const e=app.experiment(),p=e.params;
+    const moduleNames={'axial-bar':'AxialScene',kinematics:'KinematicsScene','particle-dynamics':'ParticleDynamicsScene','rigid-body':'RigidBodyScene',vibration:'VibrationScene',lagrangian:'LagrangianScene',torsion:'TorsionScene','stress-transform':'StressTransformScene','beam-material':'BeamMaterialScene',buckling:'BucklingScene',fatigue:'FatigueScene'};
+    let r={};
+    if(e.scene==='beam'||e.scene==='friction')r=window.StaticsScenes.calculate(e.scene,p);
+    else if(moduleNames[e.scene])r=window[moduleNames[e.scene]].calculate(p);
+    else if(e.scene==='lever')r={fx:p.F*Math.cos(p.theta*Math.PI/180),fy:p.F*Math.sin(p.theta*Math.PI/180)-20,moment:p.x*p.F*Math.sin(p.theta*Math.PI/180)-20};
+    const outputs={lever:[['fx','外载水平合力','N'],['fy','外载竖直合力','N'],['moment','关于铰点的外载合矩','N·m']],beam:[['RA','左反力','kN'],['RB','右反力','kN'],['Mmax','最大弯矩','kN·m']],friction:[['N','法向力','N'],['driving','沿坡重力','N'],['maxF','静摩擦上限','N']], 'axial-bar':[['stress','平均正应力','MPa'],['strain','应变',''],['elongation','伸长','mm']],kinematics:[['position.x','水平位置','m'],['position.y','竖直位置','m'],['speed','速率','m/s']], 'particle-dynamics':[['velocity.x','水平速度','m/s'],['velocity.y','竖直速度','m/s'],['kineticEnergy','动能','J'],['work','合力功','J']], 'rigid-body':[['acceleration','质心加速度','m/s²'],['angularAcceleration','角加速度','rad/s²'],['kineticEnergy','动能','J']],vibration:[['naturalAngularFrequency','固有角频率','rad/s'],['naturalFrequency','固有频率','Hz'],['displacement','位移','m'],['energy','机械能','J']],lagrangian:[['coordinate','广义坐标','m'],['velocity','广义速度','m/s'],['energy','机械能','J']],torsion:[['maxShearStress','最大剪应力','Pa'],['twist','扭转角','rad']], 'stress-transform':[['sigma1','第一主应力','MPa'],['sigma2','第二主应力','MPa'],['vonMises','等效应力','MPa']], 'beam-material':[['RA','左反力','N'],['RB','右反力','N'],['maxDeflection','最大挠度','m'],['maxStress','最大弯曲应力','Pa']],buckling:[['criticalLoad','临界力','N'],['utilization','利用率','']],fatigue:[['effectiveAmplitude','等效应力幅','MPa'],['cycles','预测寿命','cycles']]};
+    e.readings=(outputs[e.scene]||[]).map(([key,label,unit])=>({label:label+(unit?' / '+unit:''),value:key.split('.').reduce((o,k)=>o?.[k],r)})).filter(x=>typeof x.value==='number');return e;
+  }
+  function comparisonTools(){
+    const box=document.createElement('details');box.className='experiment-compare';box.innerHTML='<summary>实验记录与 A/B 对比</summary><p class="small">先保存 A，再只改变一个参数观察 B。记录仅在当前页面保留；比较静态或指定时刻的读数。</p><button type="button" id="captureExperiment" class="outline-btn">保存当前实验为 A</button><button type="button" id="compareExperiment" class="outline-btn">与当前 B 对比</button><div id="experimentDiff" role="status"></div>';$('.controls').append(box);
+    $('#captureExperiment').onclick=()=>{compare=captureExperiment();$('#experimentDiff').textContent='已保存 A。现在改变一个参数，再点击对比。';};
+    $('#compareExperiment').onclick=()=>{
+      const b=captureExperiment();if(!compare){$('#experimentDiff').textContent='请先保存实验 A。';return;}if(compare.scene!==b.scene){$('#experimentDiff').textContent='请选择与 A 相同的场景再对比。';return;}
+      const flatten=(o,prefix='')=>Object.entries(o).flatMap(([k,v])=>v&&typeof v==='object'?flatten(v,prefix+k+'.'):[[prefix+k,v]]),a=Object.fromEntries(flatten(compare.params)),bb=Object.fromEntries(flatten(b.params)),keys=Object.keys(a).filter(k=>a[k]!==bb[k]);
+      const labels={x:'作用点 x',F:'施力 F',theta:'施力角度',support:'铰支座',a:'载荷位置',P:'载荷',alpha:'坡角',mu:'静摩擦系数',mass:'质量',stiffness:'刚度',damping:'阻尼',time:'观察时刻',dt:'观察时刻',force:'轴力 / 合力',area:'截面积',length:'长度',youngsModulus:'弹性模量',inertia:'惯性矩',span:'跨度',load:'载荷',position:'载荷位置',sectionDistance:'截面距离',torque:'扭矩',radius:'半径',shearModulus:'剪切模量',sigmaX:'水平正应力',sigmaY:'竖直正应力',tauXY:'剪应力',angle:'坐标旋转角',effectiveLengthFactor:'有效长度系数',stressAmplitude:'应力幅',meanStress:'平均应力',safetyFactor:'安全系数',initialDisplacement:'初位移',initialCoordinate:'初坐标',initialVelocity:'初速度'};
+      const format=v=>typeof v==='number'?Number.isFinite(v)?Number(v.toPrecision(5)).toString():'∞':v===true?'有':v===false?'无':String(v);
+      const table=(caption,rows)=>`<table><caption>${caption}</caption><thead><tr><th>量</th><th>A</th><th>B</th></tr></thead><tbody>${rows.map(([k,x,y])=>`<tr><td>${esc(k)}</td><td>${esc(format(x))}</td><td>${esc(format(y))}</td></tr>`).join('')}</tbody></table>`;
+      const readings=b.readings.map((r,i)=>[r.label,compare.readings[i]?.value,r.value]);
+      $('#experimentDiff').innerHTML=(keys.length?table('实验条件变化（单位见控件）',keys.map(k=>[labels[k]||k,a[k],bb[k]])):'<p>A 与 B 的参数相同。</p>')+(readings.length?table('响应对比',readings):'')+`<p>哪些量变了？哪些保持不变？${keys.length>1?'一次只改变一个参数，更容易解释因果关系。':''}</p>`;
+    };
+  }
+  function render(){buildScaffold();renderHub();}
+  window.MechanicsLearningUI={render,answer,assist,begin,wasAssisted:()=>getSession().assisted};
+  comparisonTools();render();
+  if(!events().length)document.querySelector('[data-pane="learn"]')?.click();
+})();

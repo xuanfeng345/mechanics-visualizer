@@ -22,3 +22,5 @@ config.local.js
 tests/demo-frames/
 tests/capture-demo.cjs
 tests/expanded-browser-courses.js
+artifacts/
+test-output.txt

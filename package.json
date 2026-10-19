@@ -6,12 +6,12 @@
   "type": "commonjs",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
-    "test:browser": "node tests/browser-smoke.cjs",
+    "test:browser": "node tests/browser-smoke.cjs && node tests/platform-browser.cjs && node tests/formula-guide-browser.cjs",
     "test:kernel": "node tests/full-kernel-regression.cjs",
-    "check": "node --check js/playground.js && node --check js/engine-browser.js && node --check js/lesson-math.js && node --check js/formula-guide.js"
+    "check": "node tests/check-syntax.cjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "keywords": [
     "mechanics",

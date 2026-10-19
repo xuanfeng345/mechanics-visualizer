@@ -1,5 +1,5 @@
 'use strict';
-const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');const c={window:{}};vm.createContext(c);vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/engine-browser.js'),'utf8'),c);const e=c.window.MechanicsEngine;
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');const c={window:{}};vm.createContext(c);vm.runInContext(require('node:fs').readFileSync(require('node:path').join(__dirname,'../engine/motion.js'),'utf8'),c);vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/engine-browser.js'),'utf8'),c);const e=c.window.MechanicsEngine;
 for(const [method,state,model,fields,acc] of [['rodStep',{time:0,phi:0,omega:2},{angularAcceleration:3},['time','phi','omega'],'angularAcceleration'],['inclineStep',{time:0,position:0,velocity:2},{acceleration:3},['time','position','velocity'],'acceleration']]){
  for(const key of fields)for(const bad of [undefined,null,'0',NaN,Infinity])assert.throws(()=>e.release[method]({...state,[key]:bad},model,.1));
  for(const bad of [undefined,null,'0',NaN,Infinity])assert.throws(()=>e.release[method](state,{[acc]:bad},.1));

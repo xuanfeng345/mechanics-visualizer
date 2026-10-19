@@ -36,24 +36,57 @@
       ['固定端',String.raw`R_x,\quad R_y,\quad M_A`,'限制平面内两个平移和一个转动自由度，因此有两个反力分量与一个反力矩。','#alternateScene .force']
     ]
   };
-  let scene='',step=0,ready=false;
+  let scene='',signature='',step=0,ready=false,lastLive='';
   function clearHighlight(){document.querySelectorAll('.formula-highlight').forEach(e=>e.classList.remove('formula-highlight'));}
   function draw(){
     const pack=packs[scene];
-    if(!pack){clearHighlight();guide.textContent='本场景尚未提供逐步图解。请查看当前关卡公式及文字解析；此处不套用其他场景的公式。';return;}
+    if(!pack){clearHighlight();guide.textContent='未能读取本场景公式，请刷新页面后重试。';return;}
     const entry=pack[step];
     clearHighlight();
     guide.innerHTML='<div class="formula-steps">'+pack.map((p,i)=>`<button type="button" data-formula-step="${i}" aria-pressed="${i===step}">${i+1} · ${p[0]}</button>`).join('')+'</div><div id="equationDisplay" class="equation-display"></div><p class="formula-caption"></p><div class="formula-live"></div>';
     const out=$('#equationDisplay');
+    out.dataset.formulaTex=entry[1];
     if(ready){try{out.append(MathJax.tex2svg(entry[1],{display:true}));out.setAttribute('aria-label',entry[0]);}catch{out.textContent='公式暂不可用，请参考下方文字解释。';}}
     else out.textContent='数学排版加载中…';
     $('.formula-caption').textContent=entry[2];
     document.querySelectorAll('[data-formula-step]').forEach(b=>b.onclick=()=>{step=Number(b.dataset.formulaStep);draw();highlight();});
-    live();highlight();
+    lastLive='';live();highlight();
   }
   function highlight(){clearHighlight();if(!packs[scene]||$('.workspace-notes').hidden)return;document.querySelectorAll(packs[scene][step][3]).forEach(e=>e.classList.add('formula-highlight'));}
-  function live(){if(!$('.formula-live'))return;$('.formula-live').textContent='当前画面：'+(scene==='lever'?`合矩 ${$('#moment').textContent}；${$('#equilibrium').textContent}。`:$('#reactionBox').textContent);}
-  function sync(){const next=$('#scenePicker').value;if(next!==scene){scene=next;step=0;draw();}else {live();highlight();}}
+  function mathNumber(n){if(!Number.isFinite(n))return n===Infinity?String.raw`\infty`:String.raw`\text{不适用}`;if(n===0)return '0';const a=Math.abs(n);return a<.001||a>=1e5?n.toExponential(3).replace(/e([+-]?\d+)/,(_,e)=>String.raw`\times10^{${Number(e)}}`):Number(n.toPrecision(5)).toString();}
+  function readout(){
+    const exp=window.MechanicsApp?.experiment();if(!exp||exp.scene!==scene)return null;
+    const modules={'axial-bar':'AxialScene',kinematics:'KinematicsScene','particle-dynamics':'ParticleDynamicsScene','rigid-body':'RigidBodyScene',vibration:'VibrationScene',lagrangian:'LagrangianScene',torsion:'TorsionScene','stress-transform':'StressTransformScene','beam-material':'BeamMaterialScene',buckling:'BucklingScene',fatigue:'FatigueScene'};
+    if(!modules[scene])return null;
+    const r=window[modules[scene]].calculate(exp.params);
+    const fields={
+      'axial-bar':[['\\sigma','stress','MPa'],['\\varepsilon','strain',''],['\\Delta L','elongation','mm'],['\\eta','utilization','']],
+      kinematics:[['x','position.x','m'],['y','position.y','m'],['|v|','speed','m/s']],
+      'particle-dynamics':[['a_x','acceleration.x','m/s^2'],['a_y','acceleration.y','m/s^2'],['T','kineticEnergy','J'],['W','work','J']],
+      'rigid-body':[['a_C','acceleration','m/s^2'],['\\alpha','angularAcceleration','rad/s^2'],['\\omega','angularVelocity','rad/s'],['T','kineticEnergy','J']],
+      vibration:[['\\omega_n','naturalAngularFrequency','rad/s'],['f_n','naturalFrequency','Hz'],['T_n','naturalPeriod','s'],['\\zeta','dampingRatio',''],['x','displacement','m'],['E','energy','J']],
+      lagrangian:[['q','coordinate','m'],['\\dot q','velocity','m/s'],['\\mathcal L','lagrangian','J'],['E','energy','J']],
+      torsion:[['J','polarInertia','m^4'],['|\\tau|_{\\max}','maxShearStress','Pa'],['\\varphi','twist','rad']],
+      'stress-transform':[['\\sigma_1','sigma1','MPa'],['\\sigma_2','sigma2','MPa'],['\\sigma_{\\mathrm{vM}}','vonMises','MPa']],
+      'beam-material':[['R_A','RA','N'],['R_B','RB','N'],['M_{\\max}','maxMoment','N\\,m'],['v_{\\max}','maxDeflection','m']],
+      buckling:[['P_{\\mathrm{cr}}','criticalLoad','N'],['L_e','effectiveLength','m'],['\\lambda','slenderness',''],['\\eta','utilization','']],
+      fatigue:[['\\sigma_{a,\\mathrm{eq}}','effectiveAmplitude','MPa'],['N','cycles','\\text{cycles}']]
+    };
+    return String.raw`\begin{aligned}`+fields[scene].map(([label,key,unit])=>{const value=key.split('.').reduce((o,k)=>o?.[k],r);return label+'&='+mathNumber(value)+(unit?String.raw`\;\mathrm{${unit}}`:'');}).join(String.raw`\\`)+String.raw`\end{aligned}`;
+  }
+  function live(){
+    const host=$('.formula-live');if(!host)return;
+    let tex=null;try{tex=readout();}catch{/* Retain the scene's own parameter error text. */}
+    if(ready&&tex){if(tex===lastLive)return;lastLive=tex;try{host.replaceChildren(MathJax.tex2svg(tex,{display:true}));host.setAttribute('aria-label','当前参数计算结果');return;}catch{/* Fall back to readable text. */}}
+    const text='当前画面：'+(scene==='lever'?`合矩 ${$('#moment').textContent}；${$('#equilibrium').textContent}。`:$('#reactionBox').textContent);if(text!==host.textContent)host.textContent=text;
+  }
+  function sync(){
+    const next=$('#scenePicker').value,exp=window.MechanicsApp?.experiment(),p=exp?.scene===next?exp.params:{};
+    const regime=next==='vibration'?window.VibrationScene.calculate(p).regime:'';
+    const nextSignature=next+'|'+(next==='kinematics'?p.mode:'')+'|'+regime;
+    if(nextSignature!==signature){const extra=window.MechanicsFormulaPacks?.create(next,p);if(extra)packs[next]=extra;const changed=scene!==next;scene=next;signature=nextSignature;step=changed?0:Math.min(step,(packs[scene]?.length||1)-1);draw();}
+    else {live();highlight();}
+  }
   new MutationObserver(sync).observe($('#reactionBox'),{childList:true,subtree:true,characterData:true});
   new MutationObserver(highlight).observe($('.workspace-notes'),{attributes:true,attributeFilter:['hidden']});
   sync();

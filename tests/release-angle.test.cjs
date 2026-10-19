@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const nodes=new Map();const node=s=>{if(!nodes.has(s))nodes.set(s,{value:s==='#scenePicker'?'lever':'',dataset:{},attrs:{},setAttribute(k,v){this.attrs[k]=v}, append(){},remove(){}});return nodes.get(s)};
 let callback;const context={window:{},document:{querySelector:node,createElement:()=>({dataset:{}})},requestAnimationFrame:f=>{callback=f;return 1},cancelAnimationFrame(){}};
-vm.createContext(context);for(const f of ['engine-browser.js','release-view.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/'+f),'utf8'),context);
+vm.createContext(context);vm.runInContext(require('node:fs').readFileSync(require('node:path').join(__dirname,'../engine/motion.js'),'utf8'),context);for(const f of ['engine-browser.js','release-view.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/'+f),'utf8'),context);
 const engine=context.window.MechanicsEngine,original=engine.dynamics.rodRelease,angles=[];
 engine.dynamics.rodRelease=o=>{angles.push(o.phi);return original(o)};
 const originalStep=engine.release.rodStep;let steps=0,lastTime=0;

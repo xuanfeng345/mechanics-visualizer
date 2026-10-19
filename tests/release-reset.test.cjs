@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const nodes=new Map();function node(s){if(!nodes.has(s))nodes.set(s,{value:s==='#scenePicker'?'lever':'',disabled:true,dataset:{},attrs:{},setAttribute(k,v){this.attrs[k]=v},append(e){this.child=e},remove(){}});return nodes.get(s)}
-let id=0;const pending=new Map();const c={window:{},document:{querySelector:node,createElement:()=>({dataset:{}})},requestAnimationFrame:f=>{pending.set(++id,f);return id},cancelAnimationFrame:i=>pending.delete(i)};vm.createContext(c);
+let id=0;const pending=new Map();const c={window:{},document:{querySelector:node,createElement:()=>({dataset:{}})},requestAnimationFrame:f=>{pending.set(++id,f);return id},cancelAnimationFrame:i=>pending.delete(i)};vm.createContext(c);vm.runInContext(require('node:fs').readFileSync(require('node:path').join(__dirname,'../engine/motion.js'),'utf8'),c);
 for(const f of ['engine-browser.js','release-view.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/'+f),'utf8'),c);
 node('#releaseBtn').onclick();assert.equal(node('#resetMotionBtn').disabled,false);
 for(let i=0;i<20;i++){const [key,fn]=pending.entries().next().value;pending.delete(key);fn()}

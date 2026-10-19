@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>力学实验场 · 机构桌游</title>
+  <title>力学学习实验室 · 理解、验证与迁移</title>
   <link rel="stylesheet" href="css/playground.css">
   <link rel="stylesheet" href="css/workspace-layout.css?v=1">
+  <link rel="stylesheet" href="css/learning-platform.css?v=2">
 </head>
 <body>
   <header class="topbar">
@@ -24,8 +25,8 @@
     <section class="intro">
       <div>
         <p class="kicker">平面装置 · 教学闯关 / 自由实验</p>
-        <h2>先观察，再做出判断。</h2>
-        <p>把作用点、方向与支座当作真实的工程条件。静力不平衡时，系统不会“自动平衡”或播放假动画。</p>
+        <h2>先预测，再验证，最后独立解决。</h2>
+        <p>从受力与模型出发，用实验检验想法；通过变式与间隔复习，检验能否独立迁移。</p>
       </div>
       <div class="intro-actions">
         <div class="mode-switch" aria-label="实验模式">
@@ -89,7 +90,8 @@
       </div>
 
       <aside class="side-column">
-        <nav class="workspace-tabs" aria-label="学习面板"><button type="button" data-pane="task" aria-pressed="true">当前任务</button><button type="button" data-pane="map" aria-pressed="false">章节地图</button><button type="button" data-pane="notes" aria-pressed="false">知识与公式</button></nav>
+        <nav class="workspace-tabs" aria-label="学习面板"><button type="button" data-pane="learn" aria-pressed="false">学习中心</button><button type="button" data-pane="task" aria-pressed="true">当前任务</button><button type="button" data-pane="map" aria-pressed="false">章节地图</button><button type="button" data-pane="notes" aria-pressed="false">知识与公式</button></nav>
+        <section class="panel learning-hub" id="learningHub" hidden aria-label="学习中心"></section>
         <section class="panel challenge" id="challenge">
           <div class="panel-head"><span>当前关卡</span><span id="phaseText">操作阶段</span></div>
           <div id="challengeBody"></div>
@@ -138,16 +140,20 @@
   <script src="js/buckling-scene.js?v=1"></script>
   <script src="js/fatigue-curriculum.js?v=1"></script>
   <script src="js/fatigue-scene.js?v=1"></script>
-  <script src="js/engine-browser.js?v=1"></script>
+  <script src="engine/motion.js?v=2"></script>
+  <script src="js/engine-browser.js?v=2"></script>
   <script src="js/statics-scenes.js?v=statics-1"></script>
-  <script src="js/playground.js?v=statics-1"></script>
+  <script src="js/learning-core.js?v=2"></script>
+  <script src="js/playground.js?v=2"></script>
   <script src="js/workspace-layout.js?v=1"></script>
   <link rel="stylesheet" href="css/axial-chapter.css?v=1">
   <script src="js/release-view.js?v=1"></script>
+  <script src="js/learning-platform.js?v=2"></script>
   <script>window.MathJax={startup:{typeset:false},svg:{fontCache:'local'},options:{enableMenu:false,enableAssistiveMml:false},loader:{load:[]}};</script>
   <script src="vendor/mathjax-tex-svg.js"></script>
   <script src="js/lesson-math.js?v=1"></script>
-  <script src="js/formula-guide.js?v=1"></script>
+  <script src="js/formula-packs.js?v=3"></script>
+  <script src="js/formula-guide.js?v=3"></script>
   <link rel="stylesheet" href="css/formula-guide.css?v=1">
 </body>
 </html>
