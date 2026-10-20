@@ -59,6 +59,8 @@
       '\\sigma_{x\\prime}=\\frac{\\sigma_x+\\sigma_y}{2}+\\frac{\\sigma_x-\\sigma_y}{2}\\cos 2\\theta+\\tau_{xy}\\sin 2\\theta'
     )
   ];
+  const extras=(typeof module!=='undefined'&&module.exports?require('./materials-lessons'):root.MaterialsLessons)?.create('stress-transform',units.length);
+  if(extras){units.push(...extras.units);levels.push(...extras.levels);}
   const curriculum = { units, levels };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = curriculum;

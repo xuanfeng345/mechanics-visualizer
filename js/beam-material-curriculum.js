@@ -86,6 +86,8 @@
     )
   ];
 
+  const extras=(typeof module!=='undefined'&&module.exports?require('./materials-lessons'):root.MaterialsLessons)?.create('beam-material',units.length);
+  if(extras){units.push(...extras.units);levels.push(...extras.levels);}
   const curriculum = { units, levels };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = curriculum;

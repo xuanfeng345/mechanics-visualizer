@@ -57,6 +57,7 @@
   function readout(){
     const exp=window.MechanicsApp?.experiment();if(!exp||exp.scene!==scene)return null;
     const modules={'axial-bar':'AxialScene',kinematics:'KinematicsScene','particle-dynamics':'ParticleDynamicsScene','rigid-body':'RigidBodyScene',vibration:'VibrationScene',lagrangian:'LagrangianScene',torsion:'TorsionScene','stress-transform':'StressTransformScene','beam-material':'BeamMaterialScene',buckling:'BucklingScene',fatigue:'FatigueScene'};
+    if(scene==='materials-lab')return String.raw`\begin{aligned}`+window.MaterialsLab.readings(window.MaterialsLab.calculate(exp.params)).map(([label,value,unit])=>String.raw`\text{${label}}&=${mathNumber(value)}`+(unit?String.raw`\;\mathrm{${unit}}`:'')).join(String.raw`\\`)+String.raw`\end{aligned}`;
     if(!modules[scene])return null;
     const r=window[modules[scene]].calculate(exp.params);
     const fields={
@@ -68,7 +69,7 @@
       lagrangian:[['q','coordinate','m'],['\\dot q','velocity','m/s'],['\\mathcal L','lagrangian','J'],['E','energy','J']],
       torsion:[['J','polarInertia','m^4'],['|\\tau|_{\\max}','maxShearStress','Pa'],['\\varphi','twist','rad']],
       'stress-transform':[['\\sigma_1','sigma1','MPa'],['\\sigma_2','sigma2','MPa'],['\\sigma_{\\mathrm{vM}}','vonMises','MPa']],
-      'beam-material':[['R_A','RA','N'],['R_B','RB','N'],['M_{\\max}','maxMoment','N\\,m'],['v_{\\max}','maxDeflection','m']],
+      'beam-material':[['R_A','RA','N'],['R_B','RB','N'],['|M|_{\\max}','maxMoment','N\\,m'],['v_{\\max}','maxDeflection','m']],
       buckling:[['P_{\\mathrm{cr}}','criticalLoad','N'],['L_e','effectiveLength','m'],['\\lambda','slenderness',''],['\\eta','utilization','']],
       fatigue:[['\\sigma_{a,\\mathrm{eq}}','effectiveAmplitude','MPa'],['N','cycles','\\text{cycles}']]
     };
@@ -83,7 +84,7 @@
   function sync(){
     const next=$('#scenePicker').value,exp=window.MechanicsApp?.experiment(),p=exp?.scene===next?exp.params:{};
     const regime=next==='vibration'?window.VibrationScene.calculate(p).regime:'';
-    const nextSignature=next+'|'+(next==='kinematics'?p.mode:'')+'|'+regime;
+    const nextSignature=next+'|'+(next==='kinematics'?p.mode:'')+'|'+regime+'|'+(next==='materials-lab'?p.mode+':'+p.shape:'')+'|'+(next==='beam-material'?(p.support||'simple')+':'+(p.loadType||'point'):'');
     if(nextSignature!==signature){const extra=window.MechanicsFormulaPacks?.create(next,p);if(extra)packs[next]=extra;const changed=scene!==next;scene=next;signature=nextSignature;step=changed?0:Math.min(step,(packs[scene]?.length||1)-1);draw();}
     else {live();highlight();}
   }

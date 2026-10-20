@@ -18,8 +18,8 @@
   function buildScaffold(){
     const l=current(),s=app.getState(),old=$('#learningScaffold');
     if(old)old.remove();$('#challengeBody .transfer-card')?.remove();if(!l||s.mode!=='teach')return;
-    const t=getSession(),seed=l.id.length,p=core.framework(s.curriculum,seed),reasonOptions=[laws[s.curriculum],'忽略约束和初始条件，直接套一个熟悉的公式','把所有力的大小相加，不考虑方向与作用点'],reasonShift=seed%3,reasonCorrect=(3-reasonShift)%3,reasons=reasonOptions.map((_,i)=>reasonOptions[(i+reasonShift)%3]),host=document.createElement('section');host.id='learningScaffold';host.className='learning-scaffold';
-    host.innerHTML=`<div class="learning-eyebrow">理解 → 建模 → 验证 → 迁移</div><details ${s.phase==='op'?'open':''}><summary>先想一想 · 本章概念检查</summary><p>${esc(p.question)}</p><div class="choice-stack">${p.choices.map((c,i)=>`<button type="button" class="outline-btn" data-predict="${i}" ${t.prediction!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.prediction===null?'':`<p class="learning-feedback">${t.prediction===p.correct?'判断正确。':'预测与规律不符。'}${esc(p.explanation)}</p>`}<p>建模时首先应该做什么？</p><div class="choice-stack">${reasons.map((c,i)=>`<button type="button" class="outline-btn" data-reason="${i}" ${t.reason!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.reason===null?'':`<p class="learning-feedback">${t.reason===reasonCorrect?'建模依据正确。':'先明确对象、条件和规律。'}${esc(laws[s.curriculum])}。</p>`}<p class="small">这是本章概念检查；下方关卡按题目给定条件独立作答。场景初值可能不同，实验前请核对参数。</p></details>`;
+    const t=getSession(),seed=l.id.length,p=l.prediction||core.framework(s.curriculum,seed),law=l.law||laws[s.curriculum],reasonOptions=[law,'忽略约束和初始条件，直接套一个熟悉的公式','把所有力的大小相加，不考虑方向与作用点'],reasonShift=seed%3,reasonCorrect=(3-reasonShift)%3,reasons=reasonOptions.map((_,i)=>reasonOptions[(i+reasonShift)%3]),host=document.createElement('section');host.id='learningScaffold';host.className='learning-scaffold';
+    host.innerHTML=`<div class="learning-eyebrow">理解 → 建模 → 验证 → 迁移</div><details ${s.phase==='op'?'open':''}><summary>先想一想 · 本章概念检查</summary><p>${esc(p.question)}</p><div class="choice-stack">${p.choices.map((c,i)=>`<button type="button" class="outline-btn" data-predict="${i}" ${t.prediction!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.prediction===null?'':`<p class="learning-feedback">${t.prediction===p.correct?'判断正确。':'预测与规律不符。'}${esc(p.explanation)}</p>`}<p>建模时首先应该做什么？</p><div class="choice-stack">${reasons.map((c,i)=>`<button type="button" class="outline-btn" data-reason="${i}" ${t.reason!==null?'disabled':''}>${esc(c)}</button>`).join('')}</div>${t.reason===null?'':`<p class="learning-feedback">${t.reason===reasonCorrect?'建模依据正确。':'先明确对象、条件和规律。'}${esc(law)}。</p>`}<p class="small">这是本章概念检查；下方关卡按题目给定条件独立作答。场景初值可能不同，实验前请核对参数。</p></details>`;
     $('#challengeBody').prepend(host);
     host.querySelectorAll('[data-predict]').forEach(b=>b.onclick=()=>{t.prediction=Number(b.dataset.predict);if(t.prediction!==p.correct){t.assisted=true;app.getState().attemptAssisted=true;}log('prediction',t.prediction===p.correct,p.choices[t.prediction],'concept');buildScaffold();renderHub();});
     host.querySelectorAll('[data-reason]').forEach(b=>b.onclick=()=>{t.reason=Number(b.dataset.reason);if(t.reason!==reasonCorrect){t.assisted=true;app.getState().attemptAssisted=true;}log('reason',t.reason===reasonCorrect,b.textContent,'model');buildScaffold();renderHub();});
@@ -31,7 +31,7 @@
   function stats(){return core.summary(events());}
   function startQuiz(course,id,review){
     const n=events().filter(e=>e.course===course&&e.id===id&&(['transfer','review'].includes(e.kind)||(e.kind==='hint'&&e.tag==='practice-hint'))).length;
-    quiz={course,id,review,exercise:core.exercise(course,n+id.length),assisted:false,done:false,input:'',feedback:''};renderHub();
+    quiz={course,id,review,exercise:window.MaterialsLessons?.exercise(id,n+id.length)||core.exercise(course,n+id.length),assisted:false,done:false,input:'',feedback:''};renderHub();
   }
   function quizMarkup(){if(!quiz)return '';const q=quiz;return `<section class="review-quiz"><span class="learning-eyebrow">${q.review?'到期复习':'本章变式'} · ${esc(core.names[q.course])}</span><h3>不用原题答案，重新判断</h3><p>${esc(q.exercise.question)}</p><form id="reviewForm"><label>答案（${esc(q.exercise.unit)}）<input id="reviewInput" inputmode="decimal" autocomplete="off" value="${esc(q.input)}" ${q.done?'disabled':''}></label><button type="submit" class="solid-btn" ${q.done?'disabled':''}>检查答案</button></form><button type="button" id="reviewHint" class="text-btn">查看方法提示（计为辅助）</button><p id="reviewFeedback" role="status">${esc(q.feedback)}</p><button type="button" id="closeReview" class="text-btn">收起练习</button></section>`;}
   function renderHub(){
@@ -51,6 +51,7 @@
   function captureExperiment(){
     const e=app.experiment(),p=e.params;
     const moduleNames={'axial-bar':'AxialScene',kinematics:'KinematicsScene','particle-dynamics':'ParticleDynamicsScene','rigid-body':'RigidBodyScene',vibration:'VibrationScene',lagrangian:'LagrangianScene',torsion:'TorsionScene','stress-transform':'StressTransformScene','beam-material':'BeamMaterialScene',buckling:'BucklingScene',fatigue:'FatigueScene'};
+    if(e.scene==='materials-lab'){e.readings=window.MaterialsLab.readings(window.MaterialsLab.calculate(p)).map(([label,value,unit])=>({label:label+(unit?' / '+unit:''),value}));return e;}
     let r={};
     if(e.scene==='beam'||e.scene==='friction')r=window.StaticsScenes.calculate(e.scene,p);
     else if(moduleNames[e.scene])r=window[moduleNames[e.scene]].calculate(p);

@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),packs=require('../js/formula-packs'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 test('every expanded scene has its own multi-step formula pack',()=>{
-  assert.equal(packs.scenes.length,11);
+  assert.equal(packs.scenes.length,12);
   for(const scene of packs.scenes){const pack=packs.create(scene);assert.ok(pack.length>=3,scene);for(const [title,tex,caption,selector] of pack){assert.ok(title&&tex&&caption&&selector);assert.ok(!/[\x00-\x08\ufffd]/.test(tex),scene);assert.match(selector,/#alternateScene/);}}
   assert.equal(packs.create('unknown'),null);
 });

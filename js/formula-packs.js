@@ -58,6 +58,18 @@
     ]
   };
   function create(scene,p={}){
+    if(scene==='materials-lab')return (typeof module!=='undefined'&&module.exports?require('./materials-lab'):root.MaterialsLab).steps(p);
+    if(scene==='beam-material'){
+      const cant=p.support==='cantilever',uniform=p.loadType==='uniform';
+      const reaction=cant?(uniform?String.raw`R_A=qL,\quad M_A=\frac{qL^2}{2}`:String.raw`R_A=P,\quad M_A=Pa`):(uniform?String.raw`R_A=R_B=\frac{qL}{2}`:String.raw`R_A=\frac{P(L-a)}{L},\quad R_B=\frac{Pa}{L}`);
+      const internal=uniform?String.raw`\begin{aligned}V(x)&=R_A-qx\\M(x)&=R_Ax-`+(cant?String.raw`M_A-`:'')+String.raw`\frac{qx^2}{2}\end{aligned}`:String.raw`\begin{aligned}V(x)&=R_A-PH(x-a)\\M(x)&=R_Ax-`+(cant?String.raw`M_A-`:'')+String.raw`P\langle x-a\rangle\end{aligned}`;
+      return [
+        ['整体平衡',reaction,(cant?'左端固定，反力矩 MA 以逆时针为正；它与梁内负弯矩不同。':'简支支座只提供力，端部弯矩为零。')+'反力不依赖 EI。','#alternateScene [data-guide="beam"]'],
+        ['截面内力',internal,uniform?'均布强度 q 的单位是 N/m；dV/dx=−q，dM/dx=V。':'H 为阶跃函数，尖括号表示正部；x=a 处左右剪力相差 P，弯矩连续。','#alternateScene [data-guide="shear"],#alternateScene [data-guide="moment"]'],
+        ['弯曲正应力',String.raw`\sigma_{\mathrm{lower}}(x)=\frac{M(x)c}{I},\quad |\sigma|_{\max}=\frac{|M|_{\max}c}{I}`,'图中截面应力指距中性轴 c 的下缘，正值受拉；上缘符号相反。此处只计算弯曲正应力。','#alternateScene [data-guide="moment"]'],
+        ['变形与边界',String.raw`EI\,v''(x)=-M(x),\quad `+(cant?String.raw`v(0)=v'(0)=0`:String.raw`v(0)=v(L)=0`),'挠度向下为正，曲率关系含负号。曲线仅放大展示，实际值看截面读数；小挠度、等 EI，忽略剪切变形。','#alternateScene [data-guide="deflection"]']
+      ];
+    }
     if(scene==='vibration'){
       const z=(p.damping??0)/(2*Math.sqrt((p.mass??1)*(p.stiffness??100)));
       const response=z===0?[String.raw`x(t)=x_0\cos\omega_nt+\frac{v_0}{\omega_n}\sin\omega_nt`,'无阻尼自由振动，保留初位移与初速度。相位由初始状态决定。']:
@@ -91,6 +103,6 @@
     }
     return packs[scene]||null;
   }
-  const api={create,scenes:[...Object.keys(packs),'vibration','kinematics']};
+  const api={create,scenes:[...Object.keys(packs),'vibration','kinematics','materials-lab']};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;if(root)root.MechanicsFormulaPacks=api;
 })(typeof window!=='undefined'?window:null);

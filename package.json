@@ -1,6 +1,6 @@
 {
   "name": "mechanics-visualizer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "三力学交互式可视化学习工具：理论力学与材料力学课程、解析内核和可验证场景。",
   "type": "commonjs",
@@ -8,7 +8,10 @@
     "test": "node --test tests/*.test.cjs",
     "test:browser": "node tests/browser-smoke.cjs && node tests/platform-browser.cjs && node tests/formula-guide-browser.cjs",
     "test:kernel": "node tests/full-kernel-regression.cjs",
-    "check": "node tests/check-syntax.cjs"
+    "check": "node tests/check-syntax.cjs",
+    "test:precision": "node tests/precision-browser.cjs",
+    "test:beam": "node tests/beam-analysis-browser.cjs",
+    "test:materials": "node tests/materials-lab-browser.cjs"
   },
   "engines": {
     "node": ">=22"

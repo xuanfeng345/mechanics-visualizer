@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/playground.css">
   <link rel="stylesheet" href="css/workspace-layout.css?v=1">
   <link rel="stylesheet" href="css/learning-platform.css?v=2">
+  <link rel="stylesheet" href="css/precision-workbench.css?v=1">
+  <script>if(new URLSearchParams(location.search).get('ui')!=='classic')document.documentElement.dataset.ui='precision';</script>
 </head>
 <body>
   <header class="topbar">
@@ -15,8 +17,9 @@
       <h1>力学实验场</h1>
     </div>
     <nav>
-      <a href="index.html">旧站入口</a>
-      <a href="index.html?concept=force-couple">知识卡：力与力偶</a>
+      <a href="knowledge.html">旧站入口</a>
+      <a href="precision.html">振动实验</a>
+      <a href="knowledge.html?concept=force-couple">知识卡：力与力偶</a>
       <button id="backupExportBtn" class="text-btn" type="button">导出备份</button><button id="backupImportBtn" class="text-btn" type="button">导入备份</button><input id="backupFileInput" type="file" accept="application/json,.json" hidden><button id="resetBtn" class="text-btn">重置进度</button>
     </nav>
   </header>
@@ -69,7 +72,7 @@
             <div class="motion-actions"><button id="releaseBtn" type="button" class="outline-btn">释放观察</button><button id="pauseBtn" type="button" class="text-btn" disabled>暂停</button><button id="resetMotionBtn" type="button" class="text-btn" disabled>复位</button></div>
             <button id="openAll" class="outline-btn hidden">自由探索 · 全部可用</button>
           </div>
-          <label class="scene-choice">自由实验器件 <select id="scenePicker"><option value="lever">杆件与力矩</option><option value="support">约束与反力</option><option value="beam">简支梁</option><option value="friction">斜面静摩擦</option><option value="material">材料应力—应变</option><option value="axial-bar">轴向杆</option><option value="kinematics">运动学</option><option value="particle-dynamics">质点动力学</option><option value="rigid-body">刚体动力学</option><option value="vibration">单自由度振动</option><option value="lagrangian">拉格朗日谐振子</option><option value="torsion">圆轴扭转</option><option value="stress-transform">平面组合应力</option><option value="beam-material">梁弯曲</option><option value="buckling">Euler屈曲</option><option value="fatigue">疲劳S—N</option></select></label>
+          <label class="scene-choice">自由实验器件 <select id="scenePicker"><option value="lever">杆件与力矩</option><option value="support">约束与反力</option><option value="beam">简支梁</option><option value="friction">斜面静摩擦</option><option value="material">材料应力—应变</option><option value="axial-bar">轴向杆</option><option value="kinematics">运动学</option><option value="particle-dynamics">质点动力学</option><option value="rigid-body">刚体动力学</option><option value="vibration">单自由度振动</option><option value="lagrangian">拉格朗日谐振子</option><option value="torsion">圆轴扭转</option><option value="stress-transform">平面组合应力</option><option value="beam-material">梁弯曲</option><option value="buckling">Euler屈曲</option><option value="fatigue">疲劳S—N</option><option value="materials-lab">材料综合实验</option></select></label>
           <div id="alternateControls" hidden></div>
           <div class="control-grid">
             <label class="support-control"><input id="supportToggle" type="checkbox" checked> 有铰支座（关闭后要求全平衡）</label>
@@ -117,6 +120,9 @@
     </section>
   </main>
   <dialog id="resetDialog"><form method="dialog"><h3>确认重置？</h3><p>会清除本机保存的教学进度与卡牌记录。</p><div><button value="cancel" class="outline-btn">取消</button><button value="reset" class="solid-btn">确认重置</button></div></form></dialog>
+  <script src="js/materials-lab.js?v=1"></script>
+  <script src="js/materials-lab-view.js?v=1"></script>
+  <script src="js/materials-lessons.js?v=1"></script>
   <script src="js/curriculum.js?v=statics-1"></script>
   <script src="js/materials-curriculum.js?v=1"></script>
   <script src="js/axial-scene.js?v=1"></script>
@@ -155,5 +161,7 @@
   <script src="js/formula-packs.js?v=3"></script>
   <script src="js/formula-guide.js?v=3"></script>
   <link rel="stylesheet" href="css/formula-guide.css?v=1">
+  <script src="js/precision-vibration.js?v=1"></script>
+  <script src="js/precision-workbench.js?v=1"></script>
 </body>
 </html>
